@@ -28,6 +28,21 @@ gameMenu args =
             )
 
 
+message : String -> Html msg
+message string =
+    [ Layout.text [] string ]
+        |> Layout.column
+            (Html.Attributes.style "gap" "var(--big-space)"
+                :: Layout.centered
+            )
+        |> asFullScreenOverlay
+            ([ Html.Attributes.style "background-color" "var(--secondary-color)"
+             , Html.Attributes.style "color" "white"
+             ]
+                ++ Layout.centered
+            )
+
+
 asFullScreenOverlay : List (Attribute msg) -> Html msg -> Html msg
 asFullScreenOverlay attrs =
     Layout.el

@@ -20,6 +20,11 @@ screenMinHeight =
     700
 
 
+cameraRadius : Int
+cameraRadius =
+    5
+
+
 title : String
 title =
     "Game Template"
