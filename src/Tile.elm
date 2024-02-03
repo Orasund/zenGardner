@@ -4,18 +4,27 @@ import Direction exposing (Direction)
 
 
 type Tile
-    = Stone
+    = ObstacleTile Obstacle
     | Path Direction Direction
     | Sand
     | Gras
     | Water
     | Sign String
+    | Bonsai
+
+
+type Obstacle
+    = Stone
+    | Pole
 
 
 isSolid : Tile -> Bool
 isSolid tile =
     case tile of
-        Stone ->
+        ObstacleTile _ ->
+            True
+
+        Bonsai ->
             True
 
         Path _ _ ->

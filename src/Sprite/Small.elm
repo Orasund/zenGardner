@@ -7,12 +7,17 @@ import Tile exposing (Tile(..))
 fromTile : Tile -> List String
 fromTile tile =
     case tile of
-        Stone ->
+        ObstacleTile _ ->
             [ "⬜⬛"
             , "⬜⬜"
             ]
 
         Sign _ ->
+            [ "⬜⬛"
+            , "⬜⬜"
+            ]
+
+        Bonsai ->
             [ "⬜⬛"
             , "⬜⬜"
             ]
@@ -26,8 +31,8 @@ fromTile tile =
             ]
 
         Gras ->
-            [ "⬜⬜"
-            , "⬜🟩"
+            [ "⬜🟩"
+            , "⬜⬜"
             ]
 
         Water ->

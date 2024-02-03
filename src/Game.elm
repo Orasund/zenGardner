@@ -7,7 +7,7 @@ import Effect exposing (Effect(..))
 import Point
 import Random exposing (Generator)
 import Structure
-import Tile exposing (Tile(..))
+import Tile exposing (Obstacle(..), Tile(..))
 
 
 type alias Game =
@@ -23,15 +23,23 @@ type alias Random a =
 
 new : Generator Game
 new =
+    let
+        ( x, y ) =
+            ( -7, -7 )
+    in
     { playerPos = ( 0, 0 )
     , playerDir = Left
     , tiles =
         [ Structure.startingArea
-            |> Structure.transpose ( -3, -3 )
-        , Structure.startingArea
-            |> Structure.transpose ( -3 - 16, -3 )
-        , Structure.startingArea
-            |> Structure.transpose ( -3 + 16, -3 )
+            |> Structure.transpose ( x, y )
+        , Structure.grasArea
+            |> Structure.transpose ( x - 16, y - 16 )
+        , Structure.poleArea
+            |> Structure.transpose ( x - 16, y + 32 )
+        , Structure.stoneArea
+            |> Structure.transpose ( x + 32, y - 32 )
+        , Structure.grasBatches
+            |> Structure.transpose ( x + 16, y - 16 )
         ]
             |> List.concat
             |> Dict.fromList
@@ -47,17 +55,14 @@ new =
 
 generateTile : List Tile -> Random Tile
 generateTile neighbors =
-    (if neighbors == [] then
-        []
-
-     else if List.member Water neighbors then
-        [ Water, Gras ]
-
-     else if List.member Stone neighbors then
+    (if List.any Tile.isSolid neighbors then
         []
 
      else
-        [ Sand, Sand, Sand, Sand, Sand, Sand, Sand, Stone ]
+        [ List.repeat 20 Sand
+        , [ Bonsai ]
+        ]
+            |> List.concat
     )
         |> Random.uniform Sand
 
@@ -75,10 +80,18 @@ move dir game =
 
             else if game.playerDir == dir then
                 [ Direction.rotClockwise dir
+                    |> Direction.toPoint
+                    |> Point.add game.playerPos
                 , Direction.rotCounterclock dir
+                    |> Direction.toPoint
+                    |> Point.add game.playerPos
+                , Direction.rotClockwise dir
+                    |> Direction.toPoint
+                    |> Point.add newPos
+                , Direction.rotCounterclock dir
+                    |> Direction.toPoint
+                    |> Point.add newPos
                 ]
-                    |> List.map Direction.toPoint
-                    |> List.map (Point.add game.playerPos)
                     |> List.any
                         (\p ->
                             Dict.get p game.tiles

@@ -7,7 +7,7 @@ import Html exposing (Html)
 import Layout
 import Sprite.Big
 import Sprite.Small
-import Tile exposing (Tile(..))
+import Tile exposing (Obstacle(..), Tile(..))
 import View.Sprite as Sprite
 
 
@@ -72,19 +72,50 @@ viewBigTile ( x, y ) game =
 
     else
         case Dict.get ( x, y ) game.tiles of
-            Just Stone ->
-                Sprite.Big.viewStone
-                    |> Sprite.viewSprite []
+            Just (ObstacleTile obstacle) ->
+                case obstacle of
+                    Stone ->
+                        Sprite.Big.stone
+                            |> Sprite.viewSprite []
+
+                    Pole ->
+                        Sprite.Big.pole
+                            |> Sprite.viewSprite []
+
+            Just Bonsai ->
+                [ ( x - 1, y )
+                , ( x - 1, y - 1 )
+                , ( x - 1, y + 1 )
+                , ( x + 1, y )
+                , ( x + 1, y - 1 )
+                , ( x + 1, y + 1 )
+                , ( x, y - 1 )
+                , ( x, y + 1 )
+                ]
+                    |> List.all
+                        (\pos ->
+                            Dict.get pos game.tiles
+                                |> (/=) (Just Sand)
+                        )
+                    |> (\surounded ->
+                            if surounded then
+                                Sprite.Big.bonsai
+                                    |> Sprite.viewSprite []
+
+                            else
+                                Sprite.Big.bonsaiSapling
+                                    |> Sprite.viewSprite []
+                       )
 
             Just (Path dir1 dir2) ->
                 Sprite.viewPath [] dir1 dir2
 
             Just Sand ->
-                Sprite.Big.viewSand
+                Sprite.Big.sand
                     |> Sprite.viewSprite []
 
             Just Gras ->
-                Sprite.Big.viewGras
+                Sprite.Big.gras
                     |> Sprite.viewSprite []
 
             Just Water ->
