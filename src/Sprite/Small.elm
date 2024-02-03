@@ -40,6 +40,21 @@ fromTile tile =
             , "🟦🟦"
             ]
 
+        Statue ->
+            [ "⬛⬛"
+            , "⬛⬛"
+            ]
+
+        Shrine ->
+            [ "⬛⬛"
+            , "⬛⬛"
+            ]
+
+        SolidPlaceholder ->
+            [ "⬛⬛"
+            , "⬛⬛"
+            ]
+
 
 path : Direction -> Direction -> List String
 path dir1 dir2 =

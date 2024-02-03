@@ -162,7 +162,7 @@ viewOverlay model overlay =
                 { startGame = NewGame }
 
         Map ->
-            View.Game.small model.game
+            View.Overlay.map model.game
 
         Message string ->
             View.Overlay.message string

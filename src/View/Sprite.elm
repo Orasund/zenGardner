@@ -65,6 +65,15 @@ viewSprite attrs =
         }
 
 
+viewLargeSprite : List (Attribute msg) -> List String -> Html msg
+viewLargeSprite attrs =
+    fromMatrix attrs
+        { columns = 16
+        , rows = 16
+        , pixelSize = 4
+        }
+
+
 viewSmallSprite : List (Attribute msg) -> List String -> Html msg
 viewSmallSprite attrs =
     fromMatrix attrs

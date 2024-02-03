@@ -35,11 +35,15 @@ new =
         , Structure.grasArea
             |> Structure.transpose ( x - 16, y - 16 )
         , Structure.poleArea
-            |> Structure.transpose ( x - 16, y + 32 )
-        , Structure.stoneArea
-            |> Structure.transpose ( x + 32, y - 32 )
+            |> Structure.transpose ( x - 16, y + 16 )
         , Structure.grasBatches
             |> Structure.transpose ( x + 16, y - 16 )
+        , Structure.shrineArea
+            |> Structure.transpose ( x + 16, y + 16 )
+        , Structure.stoneArea
+            |> Structure.transpose ( x + 32, y - 32 )
+        , Structure.smallGarden
+            |> Structure.transpose ( x, y + 32 )
         ]
             |> List.concat
             |> Dict.fromList
@@ -47,7 +51,7 @@ new =
                 (Sign "If you are facing an obsticale, find a way around it")
             |> Dict.insert ( 0, -5 )
                 (Sign "Welcome to your own zen garden")
-            |> Dict.insert ( 0, 15 )
+            |> Dict.insert ( 0, -10 )
                 (Sign "Press M to open the map")
     }
         |> generateNewTiles

@@ -1,9 +1,10 @@
 module Structure exposing (..)
 
+import Dict exposing (Dict)
 import Tile exposing (Obstacle(..), Tile(..))
 
 
-fromEmojis : List String -> List ( ( Int, Int ), Tile )
+fromEmojis : List String -> Dict ( Int, Int ) Tile
 fromEmojis rows =
     rows
         |> List.indexedMap
@@ -19,6 +20,7 @@ fromEmojis rows =
                     |> List.filterMap identity
             )
         |> List.concat
+        |> Dict.fromList
 
 
 fromEmoji : Char -> Maybe Tile
@@ -36,6 +38,9 @@ fromEmoji char =
         '🌱' ->
             Just Gras
 
+        '🌳' ->
+            Just Bonsai
+
         '❌' ->
             Nothing
 
@@ -43,7 +48,7 @@ fromEmoji char =
             Nothing
 
 
-startingArea : List ( ( Int, Int ), Tile )
+startingArea : Dict ( Int, Int ) Tile
 startingArea =
     [ "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
     , "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
@@ -65,7 +70,7 @@ startingArea =
         |> fromEmojis
 
 
-grasArea : List ( ( Int, Int ), Tile )
+grasArea : Dict ( Int, Int ) Tile
 grasArea =
     [ "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
     , "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
@@ -87,7 +92,7 @@ grasArea =
         |> fromEmojis
 
 
-grasBatches : List ( ( Int, Int ), Tile )
+grasBatches : Dict ( Int, Int ) Tile
 grasBatches =
     [ "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
     , "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
@@ -109,7 +114,7 @@ grasBatches =
         |> fromEmojis
 
 
-poleArea : List ( ( Int, Int ), Tile )
+poleArea : Dict ( Int, Int ) Tile
 poleArea =
     [ "👣👣👣👣👣👣👣👣👣❌❌❌❌❌❌❌"
     , "👣🕋👣🕋👣🕋👣🕋👣❌❌❌❌❌❌❌"
@@ -129,9 +134,39 @@ poleArea =
     , "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
     ]
         |> fromEmojis
+        |> Dict.insert ( 6, 7 ) Statue
+        |> Dict.insert ( 7, 7 ) SolidPlaceholder
+        |> Dict.insert ( 6, 8 ) SolidPlaceholder
+        |> Dict.insert ( 7, 8 ) SolidPlaceholder
 
 
-stoneArea : List ( ( Int, Int ), Tile )
+shrineArea : Dict ( Int, Int ) Tile
+shrineArea =
+    [ "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
+    , "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
+    , "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
+    , "❌❌🕋🕋🕋🕋🕋🕋🕋🕋🕋🕋❌❌❌❌"
+    , "❌❌🕋❌❌❌❌❌❌❌❌🕋❌❌❌❌"
+    , "❌❌🕋❌❌❌❌❌❌❌❌🕋🕋🕋🕋🕋"
+    , "❌❌🕋❌❌❌❌❌❌❌❌❌❌❌❌🕋"
+    , "❌❌🕋❌❌❌❌❌❌❌❌❌❌❌❌🕋"
+    , "❌❌🕋❌❌❌❌❌❌❌❌❌❌❌❌🕋"
+    , "❌❌🕋❌❌❌❌❌❌❌❌❌❌❌❌🕋"
+    , "❌❌🕋❌❌❌❌❌❌❌❌❌❌❌❌🕋"
+    , "❌❌🕋❌❌❌❌❌❌❌❌❌❌❌❌🕋"
+    , "❌❌🕋❌❌❌❌❌🕋🕋❌❌❌❌❌🕋"
+    , "❌❌🕋🕋🕋🕋🕋❌🕋🕋❌🕋❌🕋🕋🕋"
+    , "❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌❌"
+    , "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
+    ]
+        |> fromEmojis
+        |> Dict.insert ( 8, 12 ) Statue
+        |> Dict.insert ( 9, 12 ) SolidPlaceholder
+        |> Dict.insert ( 8, 13 ) SolidPlaceholder
+        |> Dict.insert ( 9, 13 ) SolidPlaceholder
+
+
+stoneArea : Dict ( Int, Int ) Tile
 stoneArea =
     [ "❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌"
     , "❌❌❌❌❌❌❌🪨🪨🪨🪨❌❌❌❌❌"
@@ -153,12 +188,36 @@ stoneArea =
         |> fromEmojis
 
 
-transpose : ( Int, Int ) -> List ( ( Int, Int ), Tile ) -> List ( ( Int, Int ), Tile )
-transpose ( x, y ) =
-    List.map
-        (Tuple.mapFirst
-            (Tuple.mapBoth
-                ((+) x)
-                ((+) y)
+smallGarden : Dict ( Int, Int ) Tile
+smallGarden =
+    [ "❌❌❌❌❌👣👣👣❌❌❌❌❌❌❌❌"
+    , "❌❌❌❌👣👣🌳👣❌❌❌❌❌❌❌❌"
+    , "❌👣👣👣👣👣👣👣👣👣❌❌❌❌❌❌"
+    , "❌👣🌳👣👣🌳👣👣👣👣👣👣❌❌❌❌"
+    , "❌🪨🪨🪨👣👣👣👣👣👣🌳👣🪨🪨🪨❌"
+    , "❌🪨❌👣🌳👣👣🌳👣👣👣👣👣❌🪨❌"
+    , "❌🪨👣👣👣👣👣👣👣👣👣🌳👣❌❌❌"
+    , "❌🪨👣🌳👣👣👣🌱🌱👣👣👣👣👣❌❌"
+    , "❌❌👣👣👣👣🌱🌱🌱🌳👣👣🌳👣❌❌"
+    , "❌❌❌👣🌳👣🌱👣👣👣👣👣👣👣👣👣"
+    , "❌❌❌👣👣👣👣👣👣👣🌳👣👣👣🌳👣"
+    , "❌🪨👣👣👣🌱👣👣🌳👣👣👣👣👣🪨👣"
+    , "❌🪨👣🌳👣👣🌳👣👣👣👣🌳👣🌳🪨❌"
+    , "❌🪨👣👣👣👣👣👣👣🌳👣👣👣👣🪨❌"
+    , "❌🪨🪨🪨👣👣👣🌳👣👣👣❌👣🌳👣❌"
+    , "❌❌❌❌❌❌👣👣👣❌❌❌👣👣👣❌"
+    ]
+        |> fromEmojis
+
+
+transpose : ( Int, Int ) -> Dict ( Int, Int ) Tile -> List ( ( Int, Int ), Tile )
+transpose ( x, y ) dict =
+    dict
+        |> Dict.toList
+        |> List.map
+            (Tuple.mapFirst
+                (Tuple.mapBoth
+                    ((+) x)
+                    ((+) y)
+                )
             )
-        )

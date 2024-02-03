@@ -11,6 +11,9 @@ type Tile
     | Water
     | Sign String
     | Bonsai
+    | Statue
+    | Shrine
+    | SolidPlaceholder
 
 
 type Obstacle
@@ -40,4 +43,13 @@ isSolid tile =
             False
 
         Sign _ ->
+            True
+
+        Statue ->
+            True
+
+        Shrine ->
+            True
+
+        SolidPlaceholder ->
             True

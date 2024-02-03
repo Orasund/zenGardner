@@ -28,3 +28,8 @@ cameraRadius =
 title : String
 title =
     "Game Template"
+
+
+tileSize : Int
+tileSize =
+    8 * 4
