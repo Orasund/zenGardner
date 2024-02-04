@@ -1,5 +1,6 @@
 module Game.Update exposing (..)
 
+import Config
 import Dict
 import Direction exposing (Direction)
 import Effect exposing (Effect(..))
@@ -29,6 +30,18 @@ move dir game =
                         |> Dict.insert newPos Sand
             }
                 |> moveOntoSand dir
+                |> Random.map
+                    (Effect.andThen
+                        (\g ->
+                            ( g
+                            , if g.starsCollected == Config.starsAmount then
+                                [ GameIsWon ]
+
+                              else
+                                []
+                            )
+                        )
+                    )
 
         Just Gras ->
             moveOntoGras dir game

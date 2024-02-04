@@ -89,6 +89,9 @@ applyEffect effect model =
         ShowMessage string ->
             { model | overlay = Just (Message string) }
 
+        GameIsWon ->
+            { model | overlay = Just GameWon }
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
