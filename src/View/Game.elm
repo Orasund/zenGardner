@@ -17,8 +17,39 @@ toHtml game =
     let
         ( playerX, playerY ) =
             game.playerPos
+
+        plantsMet =
+            game.tiles
+                |> Dict.toList
+                |> List.filterMap
+                    (\( pos, tile ) ->
+                        if tile == Bonsai then
+                            game
+                                |> Game.neighborsOf pos
+                                |> (\neighbors ->
+                                        if
+                                            List.any
+                                                (\t ->
+                                                    case t of
+                                                        Path _ _ ->
+                                                            True
+
+                                                        _ ->
+                                                            False
+                                                )
+                                                neighbors
+                                        then
+                                            Just neighbors
+
+                                        else
+                                            Nothing
+                                   )
+
+                        else
+                            Nothing
+                    )
     in
-    List.range (playerY - Config.cameraRadius)
+    [ List.range (playerY - Config.cameraRadius)
         (playerY + Config.cameraRadius)
         |> List.concatMap
             (\y ->
@@ -35,13 +66,100 @@ toHtml game =
                                 game
                         )
             )
-        |> Html.div [ Html.Style.positionRelative ]
+        |> Html.div
+            [ Html.Style.positionRelative
+            , Html.Style.height (String.fromInt ((1 + Config.cameraRadius * 2) * Config.tileSize) ++ "px")
+            ]
+    , "Stars:"
+        ++ String.fromInt game.starsCollected
+        ++ "/"
+        ++ String.fromInt Config.starsAmount
+        |> Layout.text []
+    , plantsMet
+        |> List.filter
+            (\neighbors ->
+                neighbors
+                    |> List.member Sand
+            )
+        |> List.length
+        |> (\n ->
+                [ "Sad Plants:" ++ String.fromInt n |> Layout.text []
+                , "Happy Plants:" ++ String.fromInt (List.length plantsMet - n) |> Layout.text []
+                ]
+                    |> Layout.column []
+           )
+    ]
+        |> Layout.column []
 
 
 viewSmallTile : ( Int, Int ) -> Game -> Html msg
 viewSmallTile ( x, y ) game =
     Dict.get ( x, y ) game.tiles
-        |> Maybe.map Sprite.Small.fromTile
+        |> Maybe.map
+            (\tile ->
+                case tile of
+                    ObstacleTile _ ->
+                        [ "⬛⬛"
+                        , "⬛⬛"
+                        ]
+
+                    Sign _ ->
+                        [ "⬛⬛"
+                        , "⬛⬛"
+                        ]
+
+                    Bonsai ->
+                        if
+                            Game.neighborsOf ( x, y ) game
+                                |> List.all ((/=) Sand)
+                        then
+                            [ "⬜🟩"
+                            , "⬜⬜"
+                            ]
+
+                        else
+                            [ "⬜⬛"
+                            , "⬜⬜"
+                            ]
+
+                    Path dir1 dir2 ->
+                        Sprite.Small.path dir1 dir2
+
+                    Sand ->
+                        [ "⬜⬜"
+                        , "⬜⬜"
+                        ]
+
+                    Gras ->
+                        [ "🟩🟩"
+                        , "🟩🟩"
+                        ]
+
+                    Water ->
+                        [ "🟦🟦"
+                        , "🟦🟦"
+                        ]
+
+                    Statue ->
+                        [ "⬛⬛"
+                        , "⬛⬛"
+                        ]
+
+                    Shrine ->
+                        [ "⬛⬛"
+                        , "⬛⬛"
+                        ]
+
+                    Star ->
+                        [ "🟨🟨"
+                        , "🟨🟨"
+                        ]
+
+                    SolidPlaceholder ->
+                        [ "⬛⬛"
+                        , "⬛⬛"
+                        ]
+            )
         |> Maybe.withDefault []
         |> Sprite.viewSmallSprite []
 
@@ -73,29 +191,16 @@ viewBigTile attrs ( x, y ) game =
                     |> Sprite.viewLargeSprite attrs
 
             Just Bonsai ->
-                [ ( x - 1, y )
-                , ( x - 1, y - 1 )
-                , ( x - 1, y + 1 )
-                , ( x + 1, y )
-                , ( x + 1, y - 1 )
-                , ( x + 1, y + 1 )
-                , ( x, y - 1 )
-                , ( x, y + 1 )
-                ]
-                    |> List.all
-                        (\pos ->
-                            Dict.get pos game.tiles
-                                |> (/=) (Just Sand)
-                        )
-                    |> (\surounded ->
-                            if surounded then
-                                Sprite.Big.bonsai
-                                    |> Sprite.viewSprite attrs
+                if
+                    Game.neighborsOf ( x, y ) game
+                        |> List.all ((/=) Sand)
+                then
+                    Sprite.Big.bonsai
+                        |> Sprite.viewSprite attrs
 
-                            else
-                                Sprite.Big.bonsaiSapling
-                                    |> Sprite.viewSprite attrs
-                       )
+                else
+                    Sprite.Big.bonsaiSapling
+                        |> Sprite.viewSprite attrs
 
             Just (Path dir1 dir2) ->
                 Sprite.viewPath attrs dir1 dir2
@@ -114,6 +219,10 @@ viewBigTile attrs ( x, y ) game =
 
             Just (Sign _) ->
                 Sprite.Big.sign
+                    |> Sprite.viewSprite attrs
+
+            Just Star ->
+                Sprite.Big.star
                     |> Sprite.viewSprite attrs
 
             Just SolidPlaceholder ->

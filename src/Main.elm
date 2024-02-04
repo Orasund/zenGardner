@@ -6,6 +6,7 @@ import Config
 import Direction exposing (Direction(..))
 import Effect exposing (Effect(..))
 import Game exposing (Game)
+import Game.Update
 import Gen.Sound exposing (Sound(..))
 import Html exposing (Html)
 import Html.Attributes
@@ -115,7 +116,7 @@ update msg model =
 
                 Received result ->
                     case result of
-                        Ok (SoundEnded sound) ->
+                        Ok (SoundEnded _) ->
                             model |> withNoCmd
 
                         Err error ->
@@ -129,7 +130,7 @@ update msg model =
                     model |> setOverlay maybeOverlay |> withNoCmd
 
                 Move dir ->
-                    Game.move dir model.game
+                    Game.Update.move dir model.game
                         |> Random.map
                             (\( game, effects ) ->
                                 effects
@@ -157,9 +158,8 @@ update msg model =
 viewOverlay : Model -> Overlay -> Html Msg
 viewOverlay model overlay =
     case overlay of
-        GameMenu ->
-            View.Overlay.gameMenu
-                { startGame = NewGame }
+        GameWon ->
+            View.Overlay.gameWon
 
         Map ->
             View.Overlay.map model.game

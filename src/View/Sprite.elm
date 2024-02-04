@@ -40,7 +40,7 @@ matrixToDict rows =
                                     "#c5e710"
 
                                 '🟩' ->
-                                    "green"
+                                    "#57ba57"
 
                                 '🟦' ->
                                     "blue"

@@ -33,3 +33,7 @@ title =
 tileSize : Int
 tileSize =
     8 * 4
+
+
+starsAmount =
+    5

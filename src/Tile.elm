@@ -13,6 +13,7 @@ type Tile
     | Bonsai
     | Statue
     | Shrine
+    | Star
     | SolidPlaceholder
 
 
@@ -49,6 +50,9 @@ isSolid tile =
             True
 
         Shrine ->
+            True
+
+        Star ->
             True
 
         SolidPlaceholder ->

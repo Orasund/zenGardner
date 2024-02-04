@@ -4,58 +4,6 @@ import Direction exposing (Direction(..))
 import Tile exposing (Tile(..))
 
 
-fromTile : Tile -> List String
-fromTile tile =
-    case tile of
-        ObstacleTile _ ->
-            [ "⬜⬛"
-            , "⬜⬜"
-            ]
-
-        Sign _ ->
-            [ "⬜⬛"
-            , "⬜⬜"
-            ]
-
-        Bonsai ->
-            [ "⬜⬛"
-            , "⬜⬜"
-            ]
-
-        Path dir1 dir2 ->
-            path dir1 dir2
-
-        Sand ->
-            [ "⬜⬜"
-            , "⬜⬜"
-            ]
-
-        Gras ->
-            [ "⬜🟩"
-            , "⬜⬜"
-            ]
-
-        Water ->
-            [ "🟦🟦"
-            , "🟦🟦"
-            ]
-
-        Statue ->
-            [ "⬛⬛"
-            , "⬛⬛"
-            ]
-
-        Shrine ->
-            [ "⬛⬛"
-            , "⬛⬛"
-            ]
-
-        SolidPlaceholder ->
-            [ "⬛⬛"
-            , "⬛⬛"
-            ]
-
-
 path : Direction -> Direction -> List String
 path dir1 dir2 =
     case ( dir1, dir2 ) of

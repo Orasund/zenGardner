@@ -2,6 +2,6 @@ module Overlay exposing (..)
 
 
 type Overlay
-    = GameMenu
+    = GameWon
     | Map
     | Message String

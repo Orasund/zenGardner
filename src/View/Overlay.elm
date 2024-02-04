@@ -8,24 +8,21 @@ import Layout
 import View.Game exposing (viewSmallTile)
 
 
-gameMenu : { startGame : msg } -> Html msg
-gameMenu args =
-    [ [ "🎲" |> Layout.text [ Html.Attributes.class "font-size-title" ]
-      , "Game-Template" |> Layout.text [ Html.Attributes.class "font-size-big" ]
-      ]
-        |> Layout.column Layout.centered
-    , Layout.textButton []
-        { label = "Start"
-        , onPress = Just args.startGame
-        }
+gameWon : Html msg
+gameWon =
+    [ Layout.text [ Html.Attributes.style "font-size" "16px" ]
+        "You found all Stars"
+    , Layout.text [ Html.Attributes.style "font-size" "24px" ]
+        "Thanks for playing"
     ]
         |> Layout.column
             (Html.Attributes.style "gap" "var(--big-space)"
                 :: Layout.centered
             )
         |> asFullScreenOverlay
-            ([ Html.Attributes.style "background-color" "var(--secondary-color)"
-             , Html.Attributes.style "color" "white"
+            ([ Html.Attributes.style "background-color" "white"
+             , Html.Attributes.style "color" "black"
+             , Html.Attributes.style "font-size" "24px"
              ]
                 ++ Layout.centered
             )
@@ -33,14 +30,19 @@ gameMenu args =
 
 message : String -> Html msg
 message string =
-    [ Layout.text [] string ]
+    [ Layout.text
+        [ Html.Attributes.style "padding" "16px"
+        ]
+        string
+    ]
         |> Layout.column
             (Html.Attributes.style "gap" "var(--big-space)"
                 :: Layout.centered
             )
         |> asFullScreenOverlay
-            ([ Html.Attributes.style "background-color" "#c5e710"
+            ([ Html.Attributes.style "background-color" "white"
              , Html.Attributes.style "color" "black"
+             , Html.Attributes.style "font-size" "24px"
              ]
                 ++ Layout.centered
             )
