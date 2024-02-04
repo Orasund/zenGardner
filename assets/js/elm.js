@@ -4508,6 +4508,52 @@ var _Bitwise_shiftRightZfBy = F2(function(offset, a)
 {
 	return a >>> offset;
 });
+
+
+
+function _Time_now(millisToPosix)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(millisToPosix(Date.now())));
+	});
+}
+
+var _Time_setInterval = F2(function(interval, task)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
+		return function() { clearInterval(id); };
+	});
+});
+
+function _Time_here()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(
+			A2($elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
+		));
+	});
+}
+
+
+function _Time_getZoneName()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			var name = $elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		}
+		catch (e)
+		{
+			var name = $elm$time$Time$Offset(new Date().getTimezoneOffset());
+		}
+		callback(_Scheduler_succeed(name));
+	});
+}
 var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Basics$LT = {$: 'LT'};
@@ -5297,13 +5343,16 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$document = _Browser_document;
-var $author$project$Overlay$GameMenu = {$: 'GameMenu'};
-var $author$project$InteropDefinitions$RegisterSounds = function (a) {
+var $author$project$Main$GotSeed = function (a) {
+	return {$: 'GotSeed', a: a};
+};
+var $author$project$PortDefinition$RegisterSounds = function (a) {
 	return {$: 'RegisterSounds', a: a};
 };
 var $author$project$Gen$Sound$ClickButton = {$: 'ClickButton'};
 var $author$project$Gen$Sound$asList = _List_fromArray(
 	[$author$project$Gen$Sound$ClickButton]);
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $dillonkearns$elm_ts_json$TsJson$Encode$encoder = F2(
 	function (_v0, input) {
 		var encodeFn = _v0.a;
@@ -5336,7 +5385,7 @@ var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $dillonkearns$elm_ts_json$TsJson$Decode$null = function (value_) {
 	return A2($dillonkearns$elm_ts_json$TsJson$Decode$literal, value_, $elm$json$Json$Encode$null);
 };
-var $author$project$InteropDefinitions$flags = $dillonkearns$elm_ts_json$TsJson$Decode$null(
+var $author$project$PortDefinition$flags = $dillonkearns$elm_ts_json$TsJson$Decode$null(
 	{});
 var $dillonkearns$elm_ts_json$Internal$TsJsonType$Boolean = {$: 'Boolean'};
 var $dillonkearns$elm_ts_json$TsJson$Internal$Encode$Encoder = F2(
@@ -5591,45 +5640,55 @@ var $dillonkearns$elm_ts_json$TsJson$Encode$variantTagged = F3(
 				]),
 			builder);
 	});
-var $author$project$InteropDefinitions$fromElm = $dillonkearns$elm_ts_json$TsJson$Encode$buildUnion(
-	A3(
-		$dillonkearns$elm_ts_json$TsJson$Encode$variantTagged,
-		'registerSounds',
-		$dillonkearns$elm_ts_json$TsJson$Encode$list(
-			A2($dillonkearns$elm_ts_json$TsJson$Encode$map, $author$project$Gen$Sound$toString, $dillonkearns$elm_ts_json$TsJson$Encode$string)),
+var $author$project$PortDefinition$fromElm = function () {
+	var soundEncoder = A2($dillonkearns$elm_ts_json$TsJson$Encode$map, $author$project$Gen$Sound$toString, $dillonkearns$elm_ts_json$TsJson$Encode$string);
+	return $dillonkearns$elm_ts_json$TsJson$Encode$buildUnion(
 		A3(
 			$dillonkearns$elm_ts_json$TsJson$Encode$variantTagged,
-			'playSound',
-			$dillonkearns$elm_ts_json$TsJson$Encode$object(
-				_List_fromArray(
-					[
-						A3(
-						$dillonkearns$elm_ts_json$TsJson$Encode$required,
-						'sound',
-						function (obj) {
-							return $author$project$Gen$Sound$toString(obj.sound);
-						},
-						$dillonkearns$elm_ts_json$TsJson$Encode$string),
-						A3(
-						$dillonkearns$elm_ts_json$TsJson$Encode$required,
-						'looping',
-						function ($) {
-							return $.looping;
-						},
-						$dillonkearns$elm_ts_json$TsJson$Encode$bool)
-					])),
-			$dillonkearns$elm_ts_json$TsJson$Encode$union(
-				F3(
-					function (playSound, registerSounds, value) {
-						if (value.$ === 'RegisterSounds') {
-							var list = value.a;
-							return registerSounds(list);
-						} else {
-							var args = value.a;
-							return playSound(args);
-						}
-					})))));
-var $author$project$InteropDefinitions$SoundEnded = function (a) {
+			'registerSounds',
+			$dillonkearns$elm_ts_json$TsJson$Encode$list(soundEncoder),
+			A3(
+				$dillonkearns$elm_ts_json$TsJson$Encode$variantTagged,
+				'stopSound',
+				soundEncoder,
+				A3(
+					$dillonkearns$elm_ts_json$TsJson$Encode$variantTagged,
+					'playSound',
+					$dillonkearns$elm_ts_json$TsJson$Encode$object(
+						_List_fromArray(
+							[
+								A3(
+								$dillonkearns$elm_ts_json$TsJson$Encode$required,
+								'sound',
+								function (obj) {
+									return $author$project$Gen$Sound$toString(obj.sound);
+								},
+								$dillonkearns$elm_ts_json$TsJson$Encode$string),
+								A3(
+								$dillonkearns$elm_ts_json$TsJson$Encode$required,
+								'looping',
+								function ($) {
+									return $.looping;
+								},
+								$dillonkearns$elm_ts_json$TsJson$Encode$bool)
+							])),
+					$dillonkearns$elm_ts_json$TsJson$Encode$union(
+						F4(
+							function (playSound, stopSound, registerSounds, value) {
+								switch (value.$) {
+									case 'RegisterSounds':
+										var list = value.a;
+										return registerSounds(list);
+									case 'PlaySound':
+										var args = value.a;
+										return playSound(args);
+									default:
+										var args = value.a;
+										return stopSound(args);
+								}
+							}))))));
+}();
+var $author$project$PortDefinition$SoundEnded = function (a) {
 	return {$: 'SoundEnded', a: a};
 };
 var $dillonkearns$elm_ts_json$Internal$TsJsonType$ArrayIndex = F2(
@@ -6639,6 +6698,18 @@ var $dillonkearns$elm_ts_json$Internal$TypeReducer$simplifyIntersection = functi
 	}();
 	return thing;
 };
+var $dillonkearns$elm_ts_json$TsJson$Decode$map2 = F3(
+	function (mapFn, _v0, _v1) {
+		var innerDecoder1 = _v0.a;
+		var innerType1 = _v0.b;
+		var innerDecoder2 = _v1.a;
+		var innerType2 = _v1.b;
+		return A2(
+			$dillonkearns$elm_ts_json$TsJson$Internal$Decode$Decoder,
+			A3($elm$json$Json$Decode$map2, mapFn, innerDecoder1, innerDecoder2),
+			A2($dillonkearns$elm_ts_json$Internal$TypeReducer$intersect, innerType1, innerType2));
+	});
+var $dillonkearns$elm_ts_json$TsJson$Decode$andMap = $dillonkearns$elm_ts_json$TsJson$Decode$map2($elm$core$Basics$apR);
 var $dillonkearns$elm_ts_json$TsJson$Decode$andThen = F2(
 	function (_v0, _v1) {
 		var _function = _v0.a;
@@ -6720,6 +6791,19 @@ var $dillonkearns$elm_ts_json$TsJson$Decode$fail = function (message) {
 		$elm$json$Json$Decode$fail(message),
 		$dillonkearns$elm_ts_json$Internal$TsJsonType$Unknown);
 };
+var $dillonkearns$elm_ts_json$TsJson$Decode$field = F2(
+	function (fieldName, _v0) {
+		var innerDecoder = _v0.a;
+		var innerType = _v0.b;
+		return A2(
+			$dillonkearns$elm_ts_json$TsJson$Internal$Decode$Decoder,
+			A2($elm$json$Json$Decode$field, fieldName, innerDecoder),
+			$dillonkearns$elm_ts_json$Internal$TsJsonType$TypeObject(
+				_List_fromArray(
+					[
+						_Utils_Tuple3($dillonkearns$elm_ts_json$Internal$TsJsonType$Required, fieldName, innerType)
+					])));
+	});
 var $author$project$Gen$Sound$fromString = function (string) {
 	if (string === 'ClickButton.mp3') {
 		return $elm$core$Maybe$Just($author$project$Gen$Sound$ClickButton);
@@ -6734,7 +6818,7 @@ var $dillonkearns$elm_ts_json$TsJson$Decode$succeed = function (value_) {
 		$elm$json$Json$Decode$succeed(value_),
 		$dillonkearns$elm_ts_json$Internal$TsJsonType$Unknown);
 };
-var $author$project$InteropDefinitions$toElm = A2(
+var $author$project$PortDefinition$toElm = A2(
 	$dillonkearns$elm_ts_json$TsJson$Decode$discriminatedUnion,
 	'type',
 	_List_fromArray(
@@ -6742,27 +6826,33 @@ var $author$project$InteropDefinitions$toElm = A2(
 			_Utils_Tuple2(
 			'soundEnded',
 			A2(
-				$dillonkearns$elm_ts_json$TsJson$Decode$andThen,
-				$dillonkearns$elm_ts_json$TsJson$Decode$andThenInit(
-					function (string) {
-						return A2(
-							$elm$core$Maybe$withDefault,
-							$dillonkearns$elm_ts_json$TsJson$Decode$fail('Unkown sound ended: ' + string),
-							A2(
-								$elm$core$Maybe$map,
-								function (sound) {
-									return $dillonkearns$elm_ts_json$TsJson$Decode$succeed(
-										$author$project$InteropDefinitions$SoundEnded(sound));
-								},
-								$author$project$Gen$Sound$fromString(string)));
-					}),
-				$dillonkearns$elm_ts_json$TsJson$Decode$string))
+				$dillonkearns$elm_ts_json$TsJson$Decode$andMap,
+				A2(
+					$dillonkearns$elm_ts_json$TsJson$Decode$field,
+					'sound',
+					A2(
+						$dillonkearns$elm_ts_json$TsJson$Decode$andThen,
+						$dillonkearns$elm_ts_json$TsJson$Decode$andThenInit(
+							function (string) {
+								return A2(
+									$elm$core$Maybe$withDefault,
+									$dillonkearns$elm_ts_json$TsJson$Decode$fail('Unkown sound ended: ' + string),
+									A2(
+										$elm$core$Maybe$map,
+										$dillonkearns$elm_ts_json$TsJson$Decode$succeed,
+										$author$project$Gen$Sound$fromString(string)));
+							}),
+						$dillonkearns$elm_ts_json$TsJson$Decode$string)),
+				$dillonkearns$elm_ts_json$TsJson$Decode$succeed($author$project$PortDefinition$SoundEnded)))
 		]));
-var $author$project$InteropDefinitions$interop = {flags: $author$project$InteropDefinitions$flags, fromElm: $author$project$InteropDefinitions$fromElm, toElm: $author$project$InteropDefinitions$toElm};
-var $author$project$InteropPorts$interopFromElm = _Platform_outgoingPort('interopFromElm', $elm$core$Basics$identity);
-var $author$project$InteropPorts$fromElm = function (value) {
-	return $author$project$InteropPorts$interopFromElm(
-		A3($elm$core$Basics$apR, $author$project$InteropDefinitions$interop.fromElm, $dillonkearns$elm_ts_json$TsJson$Encode$encoder, value));
+var $author$project$PortDefinition$interop = {flags: $author$project$PortDefinition$flags, fromElm: $author$project$PortDefinition$fromElm, toElm: $author$project$PortDefinition$toElm};
+var $author$project$Port$interopFromElm = _Platform_outgoingPort('interopFromElm', $elm$core$Basics$identity);
+var $author$project$Port$fromElm = function (value) {
+	return $author$project$Port$interopFromElm(
+		A3($elm$core$Basics$apR, $author$project$PortDefinition$interop.fromElm, $dillonkearns$elm_ts_json$TsJson$Encode$encoder, value));
+};
+var $elm$random$Random$Generate = function (a) {
+	return {$: 'Generate', a: a};
 };
 var $elm$random$Random$Seed = F2(
 	function (a, b) {
@@ -6783,32 +6873,1060 @@ var $elm$random$Random$initialSeed = function (x) {
 	return $elm$random$Random$next(
 		A2($elm$random$Random$Seed, state2, incr));
 };
-var $author$project$Game$new = {};
-var $author$project$Main$init = function (_v0) {
-	return _Utils_Tuple2(
-		{
-			game: $author$project$Game$new,
-			overlay: $elm$core$Maybe$Just($author$project$Overlay$GameMenu),
-			seed: $elm$random$Random$initialSeed(42)
+var $elm$time$Time$Name = function (a) {
+	return {$: 'Name', a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 'Offset', a: a};
+};
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 'Zone', a: a, b: b};
+	});
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$Posix = function (a) {
+	return {$: 'Posix', a: a};
+};
+var $elm$time$Time$millisToPosix = $elm$time$Time$Posix;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0.a;
+	return millis;
+};
+var $elm$random$Random$init = A2(
+	$elm$core$Task$andThen,
+	function (time) {
+		return $elm$core$Task$succeed(
+			$elm$random$Random$initialSeed(
+				$elm$time$Time$posixToMillis(time)));
+	},
+	$elm$time$Time$now);
+var $elm$random$Random$step = F2(
+	function (_v0, seed) {
+		var generator = _v0.a;
+		return generator(seed);
+	});
+var $elm$random$Random$onEffects = F3(
+	function (router, commands, seed) {
+		if (!commands.b) {
+			return $elm$core$Task$succeed(seed);
+		} else {
+			var generator = commands.a.a;
+			var rest = commands.b;
+			var _v1 = A2($elm$random$Random$step, generator, seed);
+			var value = _v1.a;
+			var newSeed = _v1.b;
+			return A2(
+				$elm$core$Task$andThen,
+				function (_v2) {
+					return A3($elm$random$Random$onEffects, router, rest, newSeed);
+				},
+				A2($elm$core$Platform$sendToApp, router, value));
+		}
+	});
+var $elm$random$Random$onSelfMsg = F3(
+	function (_v0, _v1, seed) {
+		return $elm$core$Task$succeed(seed);
+	});
+var $elm$random$Random$Generator = function (a) {
+	return {$: 'Generator', a: a};
+};
+var $elm$random$Random$map = F2(
+	function (func, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v1 = genA(seed0);
+				var a = _v1.a;
+				var seed1 = _v1.b;
+				return _Utils_Tuple2(
+					func(a),
+					seed1);
+			});
+	});
+var $elm$random$Random$cmdMap = F2(
+	function (func, _v0) {
+		var generator = _v0.a;
+		return $elm$random$Random$Generate(
+			A2($elm$random$Random$map, func, generator));
+	});
+_Platform_effectManagers['Random'] = _Platform_createManager($elm$random$Random$init, $elm$random$Random$onEffects, $elm$random$Random$onSelfMsg, $elm$random$Random$cmdMap);
+var $elm$random$Random$command = _Platform_leaf('Random');
+var $elm$random$Random$generate = F2(
+	function (tagger, generator) {
+		return $elm$random$Random$command(
+			$elm$random$Random$Generate(
+				A2($elm$random$Random$map, tagger, generator)));
+	});
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Bitwise$xor = _Bitwise_xor;
+var $elm$random$Random$peel = function (_v0) {
+	var state = _v0.a;
+	var word = (state ^ (state >>> ((state >>> 28) + 4))) * 277803737;
+	return ((word >>> 22) ^ word) >>> 0;
+};
+var $elm$random$Random$int = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v0 = (_Utils_cmp(a, b) < 0) ? _Utils_Tuple2(a, b) : _Utils_Tuple2(b, a);
+				var lo = _v0.a;
+				var hi = _v0.b;
+				var range = (hi - lo) + 1;
+				if (!((range - 1) & range)) {
+					return _Utils_Tuple2(
+						(((range - 1) & $elm$random$Random$peel(seed0)) >>> 0) + lo,
+						$elm$random$Random$next(seed0));
+				} else {
+					var threshhold = (((-range) >>> 0) % range) >>> 0;
+					var accountForBias = function (seed) {
+						accountForBias:
+						while (true) {
+							var x = $elm$random$Random$peel(seed);
+							var seedN = $elm$random$Random$next(seed);
+							if (_Utils_cmp(x, threshhold) < 0) {
+								var $temp$seed = seedN;
+								seed = $temp$seed;
+								continue accountForBias;
+							} else {
+								return _Utils_Tuple2((x % range) + lo, seedN);
+							}
+						}
+					};
+					return accountForBias(seed0);
+				}
+			});
+	});
+var $elm$random$Random$map3 = F4(
+	function (func, _v0, _v1, _v2) {
+		var genA = _v0.a;
+		var genB = _v1.a;
+		var genC = _v2.a;
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var _v3 = genA(seed0);
+				var a = _v3.a;
+				var seed1 = _v3.b;
+				var _v4 = genB(seed1);
+				var b = _v4.a;
+				var seed2 = _v4.b;
+				var _v5 = genC(seed2);
+				var c = _v5.a;
+				var seed3 = _v5.b;
+				return _Utils_Tuple2(
+					A3(func, a, b, c),
+					seed3);
+			});
+	});
+var $elm$core$Bitwise$or = _Bitwise_or;
+var $elm$random$Random$independentSeed = $elm$random$Random$Generator(
+	function (seed0) {
+		var makeIndependentSeed = F3(
+			function (state, b, c) {
+				return $elm$random$Random$next(
+					A2($elm$random$Random$Seed, state, (1 | (b ^ c)) >>> 0));
+			});
+		var gen = A2($elm$random$Random$int, 0, 4294967295);
+		return A2(
+			$elm$random$Random$step,
+			A4($elm$random$Random$map3, makeIndependentSeed, gen, gen, gen),
+			seed0);
+	});
+var $author$project$Direction$Left = {$: 'Left'};
+var $author$project$Tile$Sign = function (a) {
+	return {$: 'Sign', a: a};
+};
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$random$Random$andThen = F2(
+	function (callback, _v0) {
+		var genA = _v0.a;
+		return $elm$random$Random$Generator(
+			function (seed) {
+				var _v1 = genA(seed);
+				var result = _v1.a;
+				var newSeed = _v1.b;
+				var _v2 = callback(result);
+				var genB = _v2.a;
+				return genB(newSeed);
+			});
+	});
+var $author$project$Config$cameraRadius = 5;
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $elm$random$Random$constant = function (value) {
+	return $elm$random$Random$Generator(
+		function (seed) {
+			return _Utils_Tuple2(value, seed);
+		});
+};
+var $author$project$Tile$Bonsai = {$: 'Bonsai'};
+var $author$project$Tile$Sand = {$: 'Sand'};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $author$project$Tile$isSolid = function (tile) {
+	switch (tile.$) {
+		case 'ObstacleTile':
+			return true;
+		case 'Bonsai':
+			return true;
+		case 'Path':
+			return true;
+		case 'Sand':
+			return false;
+		case 'Gras':
+			return false;
+		case 'Water':
+			return false;
+		case 'Sign':
+			return true;
+		case 'Statue':
+			return true;
+		case 'Shrine':
+			return true;
+		case 'Star':
+			return true;
+		default:
+			return true;
+	}
+};
+var $elm$core$List$repeatHelp = F3(
+	function (result, n, value) {
+		repeatHelp:
+		while (true) {
+			if (n <= 0) {
+				return result;
+			} else {
+				var $temp$result = A2($elm$core$List$cons, value, result),
+					$temp$n = n - 1,
+					$temp$value = value;
+				result = $temp$result;
+				n = $temp$n;
+				value = $temp$value;
+				continue repeatHelp;
+			}
+		}
+	});
+var $elm$core$List$repeat = F2(
+	function (n, value) {
+		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
+	});
+var $elm$random$Random$addOne = function (value) {
+	return _Utils_Tuple2(1, value);
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$random$Random$float = F2(
+	function (a, b) {
+		return $elm$random$Random$Generator(
+			function (seed0) {
+				var seed1 = $elm$random$Random$next(seed0);
+				var range = $elm$core$Basics$abs(b - a);
+				var n1 = $elm$random$Random$peel(seed1);
+				var n0 = $elm$random$Random$peel(seed0);
+				var lo = (134217727 & n1) * 1.0;
+				var hi = (67108863 & n0) * 1.0;
+				var val = ((hi * 134217728.0) + lo) / 9007199254740992.0;
+				var scaled = (val * range) + a;
+				return _Utils_Tuple2(
+					scaled,
+					$elm$random$Random$next(seed1));
+			});
+	});
+var $elm$random$Random$getByWeight = F3(
+	function (_v0, others, countdown) {
+		getByWeight:
+		while (true) {
+			var weight = _v0.a;
+			var value = _v0.b;
+			if (!others.b) {
+				return value;
+			} else {
+				var second = others.a;
+				var otherOthers = others.b;
+				if (_Utils_cmp(
+					countdown,
+					$elm$core$Basics$abs(weight)) < 1) {
+					return value;
+				} else {
+					var $temp$_v0 = second,
+						$temp$others = otherOthers,
+						$temp$countdown = countdown - $elm$core$Basics$abs(weight);
+					_v0 = $temp$_v0;
+					others = $temp$others;
+					countdown = $temp$countdown;
+					continue getByWeight;
+				}
+			}
+		}
+	});
+var $elm$core$List$sum = function (numbers) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
+};
+var $elm$random$Random$weighted = F2(
+	function (first, others) {
+		var normalize = function (_v0) {
+			var weight = _v0.a;
+			return $elm$core$Basics$abs(weight);
+		};
+		var total = normalize(first) + $elm$core$List$sum(
+			A2($elm$core$List$map, normalize, others));
+		return A2(
+			$elm$random$Random$map,
+			A2($elm$random$Random$getByWeight, first, others),
+			A2($elm$random$Random$float, 0, total));
+	});
+var $elm$random$Random$uniform = F2(
+	function (value, valueList) {
+		return A2(
+			$elm$random$Random$weighted,
+			$elm$random$Random$addOne(value),
+			A2($elm$core$List$map, $elm$random$Random$addOne, valueList));
+	});
+var $author$project$Game$generateTile = function (neighbors) {
+	return A2(
+		$elm$random$Random$uniform,
+		$author$project$Tile$Sand,
+		A2($elm$core$List$any, $author$project$Tile$isSolid, neighbors) ? _List_Nil : $elm$core$List$concat(
+			_List_fromArray(
+				[
+					A2($elm$core$List$repeat, 20, $author$project$Tile$Sand),
+					_List_fromArray(
+					[$author$project$Tile$Bonsai])
+				])));
+};
+var $author$project$Game$insert = F3(
+	function (pos, tile, game) {
+		return _Utils_update(
+			game,
+			{
+				tiles: A3($elm$core$Dict$insert, pos, tile, game.tiles)
+			});
+	});
+var $author$project$Game$neighborsOf = F2(
+	function (_v0, game) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$elm$core$List$filterMap,
+			function (p) {
+				return A2($elm$core$Dict$get, p, game.tiles);
+			},
+			_List_fromArray(
+				[
+					_Utils_Tuple2(x - 1, y),
+					_Utils_Tuple2(x + 1, y),
+					_Utils_Tuple2(x, y - 1),
+					_Utils_Tuple2(x, y + 1),
+					_Utils_Tuple2(x - 1, y - 1),
+					_Utils_Tuple2(x + 1, y - 1),
+					_Utils_Tuple2(x - 1, y + 1),
+					_Utils_Tuple2(x + 1, y + 1)
+				]));
+	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$Game$generateNewTiles = function (game) {
+	var _v0 = game.playerPos;
+	var playerX = _v0.a;
+	var playerY = _v0.b;
+	return A3(
+		$elm$core$List$foldl,
+		function (pos) {
+			return $elm$random$Random$andThen(
+				function (g) {
+					return A2(
+						$elm$random$Random$map,
+						function (tile) {
+							return A3($author$project$Game$insert, pos, tile, g);
+						},
+						$author$project$Game$generateTile(
+							A2($author$project$Game$neighborsOf, pos, game)));
+				});
 		},
-		$author$project$InteropPorts$fromElm(
-			$author$project$InteropDefinitions$RegisterSounds($author$project$Gen$Sound$asList)));
+		$elm$random$Random$constant(game),
+		A2(
+			$elm$core$List$filter,
+			function (p) {
+				return _Utils_eq(
+					A2($elm$core$Dict$get, p, game.tiles),
+					$elm$core$Maybe$Nothing);
+			},
+			A2(
+				$elm$core$List$concatMap,
+				function (x) {
+					return A2(
+						$elm$core$List$map,
+						$elm$core$Tuple$pair(x),
+						A2($elm$core$List$range, playerY - $author$project$Config$cameraRadius, playerY + $author$project$Config$cameraRadius));
+				},
+				A2($elm$core$List$range, playerX - $author$project$Config$cameraRadius, playerX + $author$project$Config$cameraRadius))));
+};
+var $author$project$Tile$Gras = {$: 'Gras'};
+var $author$project$Tile$ObstacleTile = function (a) {
+	return {$: 'ObstacleTile', a: a};
+};
+var $author$project$Tile$Pole = {$: 'Pole'};
+var $author$project$Tile$Star = {$: 'Star'};
+var $author$project$Tile$Stone = {$: 'Stone'};
+var $author$project$Tile$Water = {$: 'Water'};
+var $author$project$Structure$fromEmoji = function (_char) {
+	switch (_char.valueOf()) {
+		case '🪨':
+			return $elm$core$Maybe$Just(
+				$author$project$Tile$ObstacleTile($author$project$Tile$Stone));
+		case '🕋':
+			return $elm$core$Maybe$Just(
+				$author$project$Tile$ObstacleTile($author$project$Tile$Pole));
+		case '👣':
+			return $elm$core$Maybe$Just($author$project$Tile$Sand);
+		case '🌱':
+			return $elm$core$Maybe$Just($author$project$Tile$Gras);
+		case '🌳':
+			return $elm$core$Maybe$Just($author$project$Tile$Bonsai);
+		case '⭐':
+			return $elm$core$Maybe$Just($author$project$Tile$Star);
+		case '💧':
+			return $elm$core$Maybe$Just($author$project$Tile$Water);
+		case '❌':
+			return $elm$core$Maybe$Nothing;
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Structure$fromEmojis = function (rows) {
+	return $elm$core$Dict$fromList(
+		$elm$core$List$concat(
+			A2(
+				$elm$core$List$indexedMap,
+				F2(
+					function (y, row) {
+						return A2(
+							$elm$core$List$filterMap,
+							$elm$core$Basics$identity,
+							A2(
+								$elm$core$List$indexedMap,
+								F2(
+									function (x, _char) {
+										return A2(
+											$elm$core$Maybe$map,
+											$elm$core$Tuple$pair(
+												_Utils_Tuple2(x, y)),
+											$author$project$Structure$fromEmoji(_char));
+									}),
+								$elm$core$String$toList(row)));
+					}),
+				rows)));
+};
+var $author$project$Structure$grasBatches1 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌🌱🌱🌱❌❌❌❌❌❌❌❌❌', '❌❌❌🌱🌱🌱❌❌❌❌❌❌❌❌❌❌', '❌❌❌🌱❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌🌱❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌🌱🌱🌱❌❌❌', '❌❌❌🌱🌱❌❌❌❌❌❌🌱🌱❌❌❌', '❌❌🌱🌱🌱🌱❌❌❌❌🌱🌱❌❌❌❌', '❌❌🌱🌱❌❌❌❌❌❌❌❌❌❌❌❌', '❌🌱🌱❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Structure$grasBatches2 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌🌱❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌🌱🌱🌱❌❌❌❌❌❌❌❌❌', '❌❌❌🌱🌱🌱🌱❌❌❌❌❌❌❌❌❌', '❌❌❌❌🌱🌱❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌🌱❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌', '❌❌❌❌❌❌❌❌🌱🌱🌱❌❌❌❌❌', '❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌🌱🌱❌❌❌❌❌❌❌❌❌❌❌❌❌', '🌱🌱🌱❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌🌱❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌🌱❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌🌱🌱🌱🌱❌❌❌❌❌', '❌❌❌❌❌❌❌❌🌱❌❌❌❌❌❌❌']));
+var $author$project$Structure$grasBatches3 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌🌱❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌🌱❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌🌱🌱❌', '❌❌❌❌❌❌❌❌❌❌🌱❌❌❌🌱🌱', '❌❌❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌🌱🌱🌱❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌🌱🌱❌❌❌', '❌❌❌❌❌❌❌🌱❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌🌱🌱🌱❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌🌱❌❌❌', '❌❌❌❌❌❌❌❌❌🌱🌱🌱❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Structure$grasBatches4 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌🌱❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌🌱❌❌', '❌❌❌❌❌❌❌❌🌱❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌🌱❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌🌱🌱❌🌱❌❌❌❌❌❌', '❌❌❌❌❌❌🌱🌱🌱🌱🌱❌❌❌❌❌', '❌❌❌🌱❌❌🌱🌱🌱🌱🌱🌱❌❌❌❌', '❌❌❌🌱❌❌❌🌱🌱🌱❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌🌱❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌🌱🌱❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Structure$grasCircle1 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌🌱🌱🌱🌱🌱❌❌❌❌❌❌❌', '❌❌❌🌱🌱🌱🌱🌱🌱🌱🌱🌱❌❌❌❌', '❌❌🌱🌱🌱🌱❌❌❌❌🌱🌱🌱❌❌❌', '❌❌🌱🌱🌱❌❌❌❌❌❌🌱🌱🌱❌❌', '❌❌🌱🌱🌱❌❌❌❌❌❌❌🌱🌱❌❌', '❌❌❌🌱❌❌❌❌❌❌❌❌🌱🌱❌❌', '❌❌❌🌱❌❌❌⭐❌❌❌❌🌱🌱❌❌', '❌❌❌🌱❌❌❌❌❌❌❌❌🌱🌱❌❌', '❌❌❌🌱❌❌❌❌❌❌❌🌱🌱❌❌❌', '❌❌🌱🌱❌❌❌❌❌❌🌱🌱🌱❌❌❌', '❌❌🌱🌱🌱❌❌❌❌🌱🌱🌱❌❌❌❌', '❌❌🌱🌱🌱🌱🌱🌱🌱🌱🌱❌❌❌❌❌', '❌❌❌🌱🌱🌱🌱❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Structure$grasCircle2 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌🌱🌱🌱🌱🌱❌❌❌❌❌', '❌❌❌❌❌🌱❌❌❌❌🌱🌱❌❌❌❌', '❌❌❌❌🌱❌❌❌❌❌❌🌱🌱❌❌❌', '❌❌❌🌱🌱❌❌❌❌❌❌❌🌱❌❌❌', '❌❌❌🌱❌❌❌❌❌❌❌❌🌱🌱❌❌', '❌❌🌱🌱❌❌❌❌❌❌❌❌❌🌱🌱❌', '❌❌🌱❌❌❌❌❌❌❌❌❌❌🌱🌱❌', '❌❌🌱🌱❌❌❌❌❌❌❌❌❌🌱🌱❌', '❌❌🌱🌱🌱❌❌❌❌❌❌❌❌🌱❌❌', '❌❌🌱🌱🌱❌❌❌❌❌❌❌🌱🌱❌❌', '❌❌❌🌱🌱🌱🌱🌱❌❌❌🌱🌱❌❌❌', '❌❌❌❌❌🌱🌱🌱🌱🌱🌱🌱❌❌❌❌', '❌❌❌❌❌❌❌🌱🌱🌱🌱❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Structure$grasCircle3 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌🌱🌱🌱❌❌❌❌❌❌❌❌❌❌', '❌🌱🌱❌❌❌🌱❌❌❌❌❌❌❌❌❌', '❌🌱❌❌❌❌🌱🌱🌱❌❌❌❌❌❌❌', '❌🌱❌❌❌❌🌱🌱🌱🌱🌱🌱❌❌❌❌', '❌🌱🌱❌❌❌🌱🌱❌❌❌❌🌱❌❌❌', '❌🌱🌱❌❌🌱🌱❌❌❌❌❌🌱🌱❌❌', '❌❌🌱🌱🌱🌱❌❌❌❌❌❌🌱🌱❌❌', '❌❌🌱🌱🌱❌❌❌❌❌❌❌🌱🌱❌❌', '❌❌🌱🌱❌❌❌❌❌❌❌❌🌱🌱❌❌', '❌❌❌🌱❌❌❌❌❌❌❌❌🌱❌❌❌', '❌❌❌🌱🌱❌❌❌❌❌❌🌱❌❌❌❌', '❌❌❌❌🌱🌱❌❌❌🌱🌱❌❌❌❌❌', '❌❌❌❌❌🌱🌱🌱🌱❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Structure$grasCircle4 = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌🌱🌱🌱🌱🌱🌱❌❌❌❌❌', '❌❌❌🌱🌱🌱🌱🌱🌱🌱🌱🌱🌱❌❌❌', '❌❌🌱🌱🌱❌❌❌❌❌🌱🌱🌱🌱❌❌', '❌❌🌱🌱❌❌❌❌❌❌❌❌❌🌱🌱❌', '❌❌🌱🌱❌❌❌❌❌❌❌❌❌❌🌱🌱', '❌❌❌🌱🌱❌❌❌❌❌❌❌❌❌🌱🌱', '❌❌❌🌱🌱🌱❌❌❌❌❌❌❌❌❌🌱', '❌❌❌❌❌🌱🌱❌❌❌❌❌❌❌❌🌱', '❌❌❌❌❌🌱🌱🌱❌❌❌❌❌❌❌🌱', '❌❌❌❌❌❌🌱🌱❌❌❌❌❌❌❌🌱', '❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌🌱❌', '❌❌❌❌❌❌❌🌱🌱🌱🌱🌱🌱🌱❌❌', '❌❌❌❌❌❌❌❌🌱🌱🌱🌱❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Tile$SolidPlaceholder = {$: 'SolidPlaceholder'};
+var $author$project$Tile$Statue = {$: 'Statue'};
+var $author$project$Structure$poleArea = A3(
+	$elm$core$Dict$insert,
+	_Utils_Tuple2(7, 8),
+	$author$project$Tile$SolidPlaceholder,
+	A3(
+		$elm$core$Dict$insert,
+		_Utils_Tuple2(6, 8),
+		$author$project$Tile$SolidPlaceholder,
+		A3(
+			$elm$core$Dict$insert,
+			_Utils_Tuple2(7, 7),
+			$author$project$Tile$SolidPlaceholder,
+			A3(
+				$elm$core$Dict$insert,
+				_Utils_Tuple2(6, 7),
+				$author$project$Tile$Statue,
+				$author$project$Structure$fromEmojis(
+					_List_fromArray(
+						['👣👣👣👣👣👣👣👣👣❌❌❌❌❌❌❌', '👣🌳👣🌳👣🌳👣🌳👣❌❌❌❌❌❌❌', '👣👣👣👣👣👣👣👣👣❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌👣👣👣❌❌', '❌❌❌❌❌❌❌❌❌⭐❌👣🌳👣❌❌', '❌👣👣👣❌❌❌❌❌❌❌👣👣👣❌❌', '❌👣🌳👣❌🌱🌱🌱🌱❌❌👣🌳👣❌❌', '❌👣👣👣❌🌱🕋🕋🌱❌❌👣👣👣❌❌', '❌👣🌳👣❌🌱🕋🕋🌱❌❌👣🌳👣❌❌', '❌👣👣👣❌🌱🌱🌱🌱❌❌👣👣👣❌❌', '❌👣🌳👣❌❌❌❌❌❌❌👣🌳👣❌❌', '❌👣👣👣❌❌❌❌❌❌❌👣👣👣❌❌', '❌👣🌳👣❌❌👣👣👣👣👣👣👣👣👣❌', '❌👣👣👣❌❌👣🌳👣🌳👣🌳👣🌳👣❌', '❌❌❌❌❌❌👣👣👣👣👣👣👣👣👣❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']))))));
+var $author$project$Tile$Shrine = {$: 'Shrine'};
+var $author$project$Structure$shrineArea = A3(
+	$elm$core$Dict$insert,
+	_Utils_Tuple2(9, 13),
+	$author$project$Tile$SolidPlaceholder,
+	A3(
+		$elm$core$Dict$insert,
+		_Utils_Tuple2(8, 13),
+		$author$project$Tile$SolidPlaceholder,
+		A3(
+			$elm$core$Dict$insert,
+			_Utils_Tuple2(9, 12),
+			$author$project$Tile$SolidPlaceholder,
+			A3(
+				$elm$core$Dict$insert,
+				_Utils_Tuple2(8, 12),
+				$author$project$Tile$Shrine,
+				$author$project$Structure$fromEmojis(
+					_List_fromArray(
+						['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌🕋🕋🕋🕋🕋🕋🕋🕋🕋🕋🕋❌❌❌', '❌❌🕋❌❌❌❌❌❌❌❌💧🕋❌❌❌', '❌❌🕋❌❌❌⭐❌❌💧💧❌🕋🕋🕋🕋', '❌❌🕋❌❌❌❌❌💧💧💧❌❌❌❌🕋', '❌❌🕋❌🌳❌❌💧💧💧❌❌❌❌❌🕋', '❌❌🕋❌❌❌❌💧💧💧❌❌❌❌❌🕋', '❌❌🕋❌❌🌱🌱🌱💧❌❌🌱❌❌❌🕋', '❌❌🕋❌❌💧💧🌱🌱❌❌❌❌❌❌🕋', '❌❌🕋💧💧💧💧👣👣👣👣❌❌❌❌🕋', '❌❌🕋💧💧💧💧👣🕋🕋👣❌❌❌❌🕋', '❌❌🕋🕋🕋🕋🕋👣🕋🕋👣🕋🕋🕋🕋🕋', '❌❌❌❌❌❌❌❌🌱🌱❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']))))));
+var $author$project$Structure$smallGarden = A3(
+	$elm$core$Dict$insert,
+	_Utils_Tuple2(8, 9),
+	$author$project$Tile$SolidPlaceholder,
+	A3(
+		$elm$core$Dict$insert,
+		_Utils_Tuple2(7, 9),
+		$author$project$Tile$SolidPlaceholder,
+		A3(
+			$elm$core$Dict$insert,
+			_Utils_Tuple2(8, 8),
+			$author$project$Tile$SolidPlaceholder,
+			A3(
+				$elm$core$Dict$insert,
+				_Utils_Tuple2(7, 8),
+				$author$project$Tile$Statue,
+				$author$project$Structure$fromEmojis(
+					_List_fromArray(
+						['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌👣👣👣❌❌❌❌❌❌❌❌❌', '❌❌❌❌👣🌳👣❌❌👣👣👣❌❌❌❌', '❌🕋🕋🕋👣👣👣👣👣👣🌳👣🕋🕋🕋❌', '❌🕋⭐👣🌳👣👣🌳👣👣👣👣👣❌🕋❌', '❌🕋👣👣👣👣👣👣👣👣🌱🌱👣❌❌❌', '❌🕋👣🌳👣👣👣🌱🌱👣👣👣👣👣❌❌', '❌❌👣👣👣👣🌱🕋🕋🌳👣👣🌳👣❌❌', '❌❌❌👣🌳👣🌱🕋🕋🌱👣👣👣👣👣👣', '❌❌❌👣👣👣👣🌱🌱👣🌳👣👣👣🌳👣', '❌🕋👣👣👣🌱👣👣🌳👣👣👣👣👣🕋👣', '❌🕋👣🌳👣👣🌳👣👣👣👣🌳👣🌳🕋❌', '❌🕋👣👣👣👣👣👣👣🌳👣👣👣👣🕋❌', '❌🕋🕋🕋👣👣👣🌳👣👣👣🌱❌❌❌❌', '❌❌❌❌❌❌👣👣👣❌❌❌❌❌❌❌']))))));
+var $author$project$Config$starsAmount = 5;
+var $author$project$Structure$startingArea = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌👣👣👣👣👣❌❌❌❌❌❌', '❌❌❌❌👣👣🌱🌱🌱👣👣❌❌❌❌❌', '❌❌❌❌👣🌱🌱🌱🌱🌱👣❌❌❌❌❌', '❌❌❌❌👣🌱🌱🌱🌱🌱👣❌❌❌❌❌', '❌❌❌❌👣👣🌱🌱🌱👣👣❌❌❌❌❌', '❌❌❌❌❌👣👣👣👣👣❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌']));
+var $author$project$Structure$stoneArea = $author$project$Structure$fromEmojis(
+	_List_fromArray(
+		['❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌❌', '❌❌❌❌🌱🌱🌱❌❌❌❌❌❌❌❌❌', '❌❌❌🌱🌱🌱🌱❌❌❌❌❌❌❌💧❌', '❌❌❌🌱🌱🌱❌❌❌❌💧💧💧💧❌❌', '❌❌👣👣👣🌱❌❌❌💧💧💧💧❌❌❌', '❌❌👣🌱👣👣❌❌💧💧❌❌❌❌❌❌', '❌❌👣🌱👣👣👣💧💧👣❌❌❌❌❌❌', '❌❌👣👣👣👣👣💧💧👣👣❌❌❌❌❌', '❌❌❌👣🌱👣💧💧👣👣👣👣❌❌❌❌', '❌❌❌👣🌱🌱💧👣👣⭐👣👣❌❌❌❌', '❌❌❌👣👣🌱👣👣👣👣👣👣❌❌❌❌', '❌❌💧💧👣👣👣👣👣👣👣❌❌❌❌❌', '❌💧💧❌❌❌❌👣🌱👣👣❌👣👣👣❌', '❌❌❌❌❌❌❌👣👣👣❌❌👣🌱👣❌', '❌❌❌❌❌❌❌❌❌❌❌❌👣👣👣❌']));
+var $elm$core$Tuple$mapBoth = F3(
+	function (funcA, funcB, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			funcA(x),
+			funcB(y));
+	});
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var $author$project$Structure$transpose = F2(
+	function (_v0, dict) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$elm$core$List$map,
+			$elm$core$Tuple$mapFirst(
+				A2(
+					$elm$core$Tuple$mapBoth,
+					$elm$core$Basics$add(x),
+					$elm$core$Basics$add(y))),
+			$elm$core$Dict$toList(dict));
+	});
+var $author$project$Game$new = function () {
+	var _v0 = _Utils_Tuple2(-7, -7);
+	var x = _v0.a;
+	var y = _v0.b;
+	return $author$project$Game$generateNewTiles(
+		{
+			playerDir: $author$project$Direction$Left,
+			playerPos: _Utils_Tuple2(0, 0),
+			starsCollected: 0,
+			tiles: A3(
+				$elm$core$Dict$insert,
+				_Utils_Tuple2(-7, -14),
+				$author$project$Tile$Sign(
+					'Collect all ' + ($elm$core$String$fromInt($author$project$Config$starsAmount) + ' Stars to win the game')),
+				A3(
+					$elm$core$Dict$insert,
+					_Utils_Tuple2(-6, -12),
+					$author$project$Tile$Sign('Make plants happy, by incircling them'),
+					A3(
+						$elm$core$Dict$insert,
+						_Utils_Tuple2(-4, -9),
+						$author$project$Tile$Sign('Press M to open the map'),
+						A3(
+							$elm$core$Dict$insert,
+							_Utils_Tuple2(-3, -4),
+							$author$project$Tile$Sign('Welcome to your own zen garden'),
+							A3(
+								$elm$core$Dict$insert,
+								_Utils_Tuple2(0, -2),
+								$author$project$Tile$Sign('If you are facing an obsticale, find a way around it'),
+								$elm$core$Dict$fromList(
+									$elm$core$List$concat(
+										_List_fromArray(
+											[
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x, y),
+												$author$project$Structure$startingArea),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x - 16, y - 16),
+												$author$project$Structure$grasCircle1),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x - 16, y + 16),
+												$author$project$Structure$grasCircle2),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x + 16, y - 16),
+												$author$project$Structure$grasCircle3),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x + 16, y + 16),
+												$author$project$Structure$grasCircle4),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x, y + 32),
+												$author$project$Structure$grasBatches1),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x, y - 32),
+												$author$project$Structure$grasBatches2),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x - 32, y),
+												$author$project$Structure$grasBatches3),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x + 32, y),
+												$author$project$Structure$grasBatches4),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x - 32, y + 32),
+												$author$project$Structure$poleArea),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x + 32, y - 32),
+												$author$project$Structure$smallGarden),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x + 32, y + 32),
+												$author$project$Structure$stoneArea),
+												A2(
+												$author$project$Structure$transpose,
+												_Utils_Tuple2(x - 32, y - 32),
+												$author$project$Structure$shrineArea)
+											]))))))))
+		});
+}();
+var $author$project$Main$init = function (_v0) {
+	var _v1 = A2(
+		$elm$random$Random$step,
+		$author$project$Game$new,
+		$elm$random$Random$initialSeed(42));
+	var game = _v1.a;
+	var seed = _v1.b;
+	return _Utils_Tuple2(
+		{game: game, overlay: $elm$core$Maybe$Nothing, seed: seed},
+		$elm$core$Platform$Cmd$batch(
+			_List_fromArray(
+				[
+					$author$project$Port$fromElm(
+					$author$project$PortDefinition$RegisterSounds($author$project$Gen$Sound$asList)),
+					A2($elm$random$Random$generate, $author$project$Main$GotSeed, $elm$random$Random$independentSeed)
+				])));
 };
 var $author$project$Main$Received = function (a) {
 	return {$: 'Received', a: a};
 };
-var $elm$core$Platform$Sub$map = _Platform_map;
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$InteropPorts$interopToElm = _Platform_incomingPort('interopToElm', $elm$json$Json$Decode$value);
-var $author$project$InteropPorts$toElm = $author$project$InteropPorts$interopToElm(
-	$elm$json$Json$Decode$decodeValue(
-		$dillonkearns$elm_ts_json$TsJson$Decode$decoder($author$project$InteropDefinitions$interop.toElm)));
-var $author$project$Main$subscriptions = function (_v0) {
-	return A2($elm$core$Platform$Sub$map, $author$project$Main$Received, $author$project$InteropPorts$toElm);
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $author$project$Direction$Down = {$: 'Down'};
+var $author$project$Main$Idle = {$: 'Idle'};
+var $author$project$Main$Move = function (a) {
+	return {$: 'Move', a: a};
 };
-var $author$project$InteropDefinitions$PlaySound = function (a) {
+var $author$project$Main$OpenMap = {$: 'OpenMap'};
+var $author$project$Direction$Right = {$: 'Right'};
+var $author$project$Direction$Up = {$: 'Up'};
+var $author$project$Main$toDirection = function (string) {
+	switch (string) {
+		case 'a':
+			return $author$project$Main$Move($author$project$Direction$Left);
+		case 'd':
+			return $author$project$Main$Move($author$project$Direction$Right);
+		case 'w':
+			return $author$project$Main$Move($author$project$Direction$Up);
+		case 's':
+			return $author$project$Main$Move($author$project$Direction$Down);
+		case 'm':
+			return $author$project$Main$OpenMap;
+		default:
+			return $author$project$Main$Idle;
+	}
+};
+var $author$project$Main$keyDecoder = A2(
+	$elm$json$Json$Decode$map,
+	$author$project$Main$toDirection,
+	A2($elm$json$Json$Decode$field, 'key', $elm$json$Json$Decode$string));
+var $elm$core$Platform$Sub$map = _Platform_map;
+var $elm$browser$Browser$Events$Document = {$: 'Document'};
+var $elm$browser$Browser$Events$MySub = F3(
+	function (a, b, c) {
+		return {$: 'MySub', a: a, b: b, c: c};
+	});
+var $elm$browser$Browser$Events$State = F2(
+	function (subs, pids) {
+		return {pids: pids, subs: subs};
+	});
+var $elm$browser$Browser$Events$init = $elm$core$Task$succeed(
+	A2($elm$browser$Browser$Events$State, _List_Nil, $elm$core$Dict$empty));
+var $elm$browser$Browser$Events$nodeToKey = function (node) {
+	if (node.$ === 'Document') {
+		return 'd_';
+	} else {
+		return 'w_';
+	}
+};
+var $elm$browser$Browser$Events$addKey = function (sub) {
+	var node = sub.a;
+	var name = sub.b;
+	return _Utils_Tuple2(
+		_Utils_ap(
+			$elm$browser$Browser$Events$nodeToKey(node),
+			name),
+		sub);
+};
+var $elm$core$Process$kill = _Scheduler_kill;
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _v0) {
+				stepState:
+				while (true) {
+					var list = _v0.a;
+					var result = _v0.b;
+					if (!list.b) {
+						return _Utils_Tuple2(
+							list,
+							A3(rightStep, rKey, rValue, result));
+					} else {
+						var _v2 = list.a;
+						var lKey = _v2.a;
+						var lValue = _v2.b;
+						var rest = list.b;
+						if (_Utils_cmp(lKey, rKey) < 0) {
+							var $temp$rKey = rKey,
+								$temp$rValue = rValue,
+								$temp$_v0 = _Utils_Tuple2(
+								rest,
+								A3(leftStep, lKey, lValue, result));
+							rKey = $temp$rKey;
+							rValue = $temp$rValue;
+							_v0 = $temp$_v0;
+							continue stepState;
+						} else {
+							if (_Utils_cmp(lKey, rKey) > 0) {
+								return _Utils_Tuple2(
+									list,
+									A3(rightStep, rKey, rValue, result));
+							} else {
+								return _Utils_Tuple2(
+									rest,
+									A4(bothStep, lKey, lValue, rValue, result));
+							}
+						}
+					}
+				}
+			});
+		var _v3 = A3(
+			$elm$core$Dict$foldl,
+			stepState,
+			_Utils_Tuple2(
+				$elm$core$Dict$toList(leftDict),
+				initialResult),
+			rightDict);
+		var leftovers = _v3.a;
+		var intermediateResult = _v3.b;
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v4, result) {
+					var k = _v4.a;
+					var v = _v4.b;
+					return A3(leftStep, k, v, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var $elm$browser$Browser$Events$Event = F2(
+	function (key, event) {
+		return {event: event, key: key};
+	});
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
+var $elm$browser$Browser$Events$spawn = F3(
+	function (router, key, _v0) {
+		var node = _v0.a;
+		var name = _v0.b;
+		var actualNode = function () {
+			if (node.$ === 'Document') {
+				return _Browser_doc;
+			} else {
+				return _Browser_window;
+			}
+		}();
+		return A2(
+			$elm$core$Task$map,
+			function (value) {
+				return _Utils_Tuple2(key, value);
+			},
+			A3(
+				_Browser_on,
+				actualNode,
+				name,
+				function (event) {
+					return A2(
+						$elm$core$Platform$sendToSelf,
+						router,
+						A2($elm$browser$Browser$Events$Event, key, event));
+				}));
+	});
+var $elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
+	});
+var $elm$browser$Browser$Events$onEffects = F3(
+	function (router, subs, state) {
+		var stepRight = F3(
+			function (key, sub, _v6) {
+				var deads = _v6.a;
+				var lives = _v6.b;
+				var news = _v6.c;
+				return _Utils_Tuple3(
+					deads,
+					lives,
+					A2(
+						$elm$core$List$cons,
+						A3($elm$browser$Browser$Events$spawn, router, key, sub),
+						news));
+			});
+		var stepLeft = F3(
+			function (_v4, pid, _v5) {
+				var deads = _v5.a;
+				var lives = _v5.b;
+				var news = _v5.c;
+				return _Utils_Tuple3(
+					A2($elm$core$List$cons, pid, deads),
+					lives,
+					news);
+			});
+		var stepBoth = F4(
+			function (key, pid, _v2, _v3) {
+				var deads = _v3.a;
+				var lives = _v3.b;
+				var news = _v3.c;
+				return _Utils_Tuple3(
+					deads,
+					A3($elm$core$Dict$insert, key, pid, lives),
+					news);
+			});
+		var newSubs = A2($elm$core$List$map, $elm$browser$Browser$Events$addKey, subs);
+		var _v0 = A6(
+			$elm$core$Dict$merge,
+			stepLeft,
+			stepBoth,
+			stepRight,
+			state.pids,
+			$elm$core$Dict$fromList(newSubs),
+			_Utils_Tuple3(_List_Nil, $elm$core$Dict$empty, _List_Nil));
+		var deadPids = _v0.a;
+		var livePids = _v0.b;
+		var makeNewPids = _v0.c;
+		return A2(
+			$elm$core$Task$andThen,
+			function (pids) {
+				return $elm$core$Task$succeed(
+					A2(
+						$elm$browser$Browser$Events$State,
+						newSubs,
+						A2(
+							$elm$core$Dict$union,
+							livePids,
+							$elm$core$Dict$fromList(pids))));
+			},
+			A2(
+				$elm$core$Task$andThen,
+				function (_v1) {
+					return $elm$core$Task$sequence(makeNewPids);
+				},
+				$elm$core$Task$sequence(
+					A2($elm$core$List$map, $elm$core$Process$kill, deadPids))));
+	});
+var $elm$browser$Browser$Events$onSelfMsg = F3(
+	function (router, _v0, state) {
+		var key = _v0.key;
+		var event = _v0.event;
+		var toMessage = function (_v2) {
+			var subKey = _v2.a;
+			var _v3 = _v2.b;
+			var node = _v3.a;
+			var name = _v3.b;
+			var decoder = _v3.c;
+			return _Utils_eq(subKey, key) ? A2(_Browser_decodeEvent, decoder, event) : $elm$core$Maybe$Nothing;
+		};
+		var messages = A2($elm$core$List$filterMap, toMessage, state.subs);
+		return A2(
+			$elm$core$Task$andThen,
+			function (_v1) {
+				return $elm$core$Task$succeed(state);
+			},
+			$elm$core$Task$sequence(
+				A2(
+					$elm$core$List$map,
+					$elm$core$Platform$sendToApp(router),
+					messages)));
+	});
+var $elm$browser$Browser$Events$subMap = F2(
+	function (func, _v0) {
+		var node = _v0.a;
+		var name = _v0.b;
+		var decoder = _v0.c;
+		return A3(
+			$elm$browser$Browser$Events$MySub,
+			node,
+			name,
+			A2($elm$json$Json$Decode$map, func, decoder));
+	});
+_Platform_effectManagers['Browser.Events'] = _Platform_createManager($elm$browser$Browser$Events$init, $elm$browser$Browser$Events$onEffects, $elm$browser$Browser$Events$onSelfMsg, 0, $elm$browser$Browser$Events$subMap);
+var $elm$browser$Browser$Events$subscription = _Platform_leaf('Browser.Events');
+var $elm$browser$Browser$Events$on = F3(
+	function (node, name, decoder) {
+		return $elm$browser$Browser$Events$subscription(
+			A3($elm$browser$Browser$Events$MySub, node, name, decoder));
+	});
+var $elm$browser$Browser$Events$onKeyDown = A2($elm$browser$Browser$Events$on, $elm$browser$Browser$Events$Document, 'keydown');
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Port$interopToElm = _Platform_incomingPort('interopToElm', $elm$json$Json$Decode$value);
+var $author$project$Port$toElm = $author$project$Port$interopToElm(
+	$elm$json$Json$Decode$decodeValue(
+		$dillonkearns$elm_ts_json$TsJson$Decode$decoder($author$project$PortDefinition$interop.toElm)));
+var $author$project$Main$subscriptions = function (_v0) {
+	return $elm$core$Platform$Sub$batch(
+		_List_fromArray(
+			[
+				A2($elm$core$Platform$Sub$map, $author$project$Main$Received, $author$project$Port$toElm),
+				$elm$browser$Browser$Events$onKeyDown($author$project$Main$keyDecoder)
+			]));
+};
+var $author$project$Overlay$Map = {$: 'Map'};
+var $author$project$PortDefinition$PlaySound = function (a) {
 	return {$: 'PlaySound', a: a};
 };
+var $author$project$Main$apply = F2(
+	function (_v0, generator) {
+		var seed = _v0.seed;
+		var _v1 = A2($elm$random$Random$step, generator, seed);
+		var model = _v1.a;
+		var newSeed = _v1.b;
+		return _Utils_update(
+			model,
+			{seed: newSeed});
+	});
+var $author$project$Overlay$GameWon = {$: 'GameWon'};
+var $author$project$Overlay$Message = function (a) {
+	return {$: 'Message', a: a};
+};
+var $author$project$Main$applyEffect = F2(
+	function (effect, model) {
+		if (effect.$ === 'ShowMessage') {
+			var string = effect.a;
+			return _Utils_update(
+				model,
+				{
+					overlay: $elm$core$Maybe$Just(
+						$author$project$Overlay$Message(string))
+				});
+		} else {
+			return _Utils_update(
+				model,
+				{
+					overlay: $elm$core$Maybe$Just($author$project$Overlay$GameWon)
+				});
+		}
+	});
 var $author$project$Main$gotSeed = F2(
 	function (seed, model) {
 		return _Utils_update(
@@ -6816,6 +7934,324 @@ var $author$project$Main$gotSeed = F2(
 			{seed: seed});
 	});
 var $elm$core$Debug$log = _Debug_log;
+var $author$project$Effect$GameIsWon = {$: 'GameIsWon'};
+var $author$project$Effect$ShowMessage = function (a) {
+	return {$: 'ShowMessage', a: a};
+};
+var $author$project$Point$add = F2(
+	function (_v0, _v1) {
+		var x1 = _v0.a;
+		var y1 = _v0.b;
+		var x2 = _v1.a;
+		var y2 = _v1.b;
+		return _Utils_Tuple2(x1 + x2, y1 + y2);
+	});
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
+var $author$project$Effect$andThen = F2(
+	function (fun, _v0) {
+		var a = _v0.a;
+		var l = _v0.b;
+		return A2(
+			$elm$core$Tuple$mapSecond,
+			$elm$core$Basics$append(l),
+			fun(a));
+	});
+var $author$project$Tile$Path = F2(
+	function (a, b) {
+		return {$: 'Path', a: a, b: b};
+	});
+var $author$project$Direction$rotClockwise = function (direction) {
+	switch (direction.$) {
+		case 'Up':
+			return $author$project$Direction$Right;
+		case 'Right':
+			return $author$project$Direction$Down;
+		case 'Down':
+			return $author$project$Direction$Left;
+		default:
+			return $author$project$Direction$Up;
+	}
+};
+var $author$project$Direction$toPoint = function (dir) {
+	switch (dir.$) {
+		case 'Up':
+			return _Utils_Tuple2(0, -1);
+		case 'Down':
+			return _Utils_Tuple2(0, 1);
+		case 'Left':
+			return _Utils_Tuple2(-1, 0);
+		default:
+			return _Utils_Tuple2(1, 0);
+	}
+};
+var $author$project$Effect$withNone = function (a) {
+	return _Utils_Tuple2(a, _List_Nil);
+};
+var $author$project$Game$Update$moveOntoGras = F2(
+	function (dir, game) {
+		var newPos = A2(
+			$author$project$Point$add,
+			game.playerPos,
+			$author$project$Direction$toPoint(dir));
+		return A2(
+			$elm$random$Random$map,
+			$author$project$Effect$withNone,
+			$author$project$Game$generateNewTiles(
+				_Utils_update(
+					game,
+					{
+						playerDir: dir,
+						playerPos: newPos,
+						tiles: (_Utils_eq(
+							A2($elm$core$Dict$get, game.playerPos, game.tiles),
+							$elm$core$Maybe$Just($author$project$Tile$Gras)) || _Utils_eq(
+							game.playerDir,
+							$author$project$Direction$rotClockwise(
+								$author$project$Direction$rotClockwise(dir)))) ? game.tiles : A3(
+							$elm$core$Dict$insert,
+							game.playerPos,
+							A2(
+								$author$project$Tile$Path,
+								$author$project$Direction$rotClockwise(
+									$author$project$Direction$rotClockwise(game.playerDir)),
+								dir),
+							game.tiles)
+					})));
+	});
+var $author$project$Game$Update$moveOntoPath = F2(
+	function (args, game) {
+		var newPos = A2(
+			$author$project$Point$add,
+			game.playerPos,
+			$author$project$Direction$toPoint(args.dir));
+		var _v0 = args.path;
+		var dir1 = _v0.a;
+		var dir2 = _v0.b;
+		var maybeNewDir = _Utils_eq(
+			args.dir,
+			$author$project$Direction$rotClockwise(
+				$author$project$Direction$rotClockwise(dir1))) ? $elm$core$Maybe$Just(dir2) : (_Utils_eq(
+			args.dir,
+			$author$project$Direction$rotClockwise(
+				$author$project$Direction$rotClockwise(dir2))) ? $elm$core$Maybe$Just(dir1) : $elm$core$Maybe$Nothing);
+		return $elm$random$Random$constant(
+			$author$project$Effect$withNone(
+				A2(
+					$elm$core$Maybe$withDefault,
+					game,
+					A2(
+						$elm$core$Maybe$map,
+						function (newDir) {
+							return _Utils_update(
+								game,
+								{
+									playerDir: $author$project$Direction$rotClockwise(
+										$author$project$Direction$rotClockwise(newDir)),
+									playerPos: newPos,
+									tiles: A3($elm$core$Dict$insert, newPos, $author$project$Tile$Sand, game.tiles)
+								});
+						},
+						maybeNewDir))));
+	});
+var $author$project$Direction$rotCounterclock = function (direction) {
+	switch (direction.$) {
+		case 'Up':
+			return $author$project$Direction$Left;
+		case 'Left':
+			return $author$project$Direction$Down;
+		case 'Down':
+			return $author$project$Direction$Right;
+		default:
+			return $author$project$Direction$Up;
+	}
+};
+var $author$project$Game$Update$moveOntoSand = F2(
+	function (dir, game) {
+		var newPos = A2(
+			$author$project$Point$add,
+			game.playerPos,
+			$author$project$Direction$toPoint(dir));
+		var isValid = (!_Utils_eq(
+			A2($elm$core$Dict$get, newPos, game.tiles),
+			$elm$core$Maybe$Just($author$project$Tile$Sand))) ? true : ((!_Utils_eq(
+			A2($elm$core$Dict$get, game.playerPos, game.tiles),
+			$elm$core$Maybe$Just($author$project$Tile$Sand))) ? true : (_Utils_eq(game.playerDir, dir) ? A2(
+			$elm$core$List$any,
+			function (p) {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						$author$project$Tile$isSolid,
+						A2($elm$core$Dict$get, p, game.tiles)));
+			},
+			_List_fromArray(
+				[
+					A2(
+					$author$project$Point$add,
+					game.playerPos,
+					$author$project$Direction$toPoint(
+						$author$project$Direction$rotClockwise(dir))),
+					A2(
+					$author$project$Point$add,
+					game.playerPos,
+					$author$project$Direction$toPoint(
+						$author$project$Direction$rotCounterclock(dir))),
+					A2(
+					$author$project$Point$add,
+					newPos,
+					$author$project$Direction$toPoint(
+						$author$project$Direction$rotClockwise(dir))),
+					A2(
+					$author$project$Point$add,
+					newPos,
+					$author$project$Direction$toPoint(
+						$author$project$Direction$rotCounterclock(dir)))
+				])) : A2(
+			$elm$core$List$any,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						$author$project$Tile$isSolid,
+						function (p) {
+							return A2($elm$core$Dict$get, p, game.tiles);
+						}(
+							A2(
+								$author$project$Point$add,
+								newPos,
+								$author$project$Direction$toPoint(
+									$author$project$Direction$rotClockwise(dir)))))),
+					A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						$author$project$Tile$isSolid,
+						function (p) {
+							return A2($elm$core$Dict$get, p, game.tiles);
+						}(
+							A2(
+								$author$project$Point$add,
+								newPos,
+								$author$project$Direction$toPoint(
+									$author$project$Direction$rotCounterclock(dir)))))),
+					A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						$author$project$Tile$isSolid,
+						function (p) {
+							return A2($elm$core$Dict$get, p, game.tiles);
+						}(
+							A2(
+								$author$project$Point$add,
+								game.playerPos,
+								$author$project$Direction$toPoint(game.playerDir)))))
+				]))));
+		return isValid ? A2(
+			$elm$random$Random$map,
+			$author$project$Effect$withNone,
+			$author$project$Game$generateNewTiles(
+				_Utils_update(
+					game,
+					{
+						playerDir: dir,
+						playerPos: newPos,
+						tiles: _Utils_eq(
+							A2($elm$core$Dict$get, game.playerPos, game.tiles),
+							$elm$core$Maybe$Just($author$project$Tile$Gras)) ? game.tiles : A3(
+							$elm$core$Dict$insert,
+							game.playerPos,
+							A2(
+								$author$project$Tile$Path,
+								$author$project$Direction$rotClockwise(
+									$author$project$Direction$rotClockwise(game.playerDir)),
+								dir),
+							game.tiles)
+					}))) : $elm$random$Random$constant(
+			$author$project$Effect$withNone(game));
+	});
+var $author$project$Game$Update$move = F2(
+	function (dir, game) {
+		var newPos = A2(
+			$author$project$Point$add,
+			game.playerPos,
+			$author$project$Direction$toPoint(dir));
+		var _v0 = A2($elm$core$Dict$get, newPos, game.tiles);
+		_v0$5:
+		while (true) {
+			if (_v0.$ === 'Just') {
+				switch (_v0.a.$) {
+					case 'Star':
+						var _v1 = _v0.a;
+						return A2(
+							$elm$random$Random$map,
+							$author$project$Effect$andThen(
+								function (g) {
+									return _Utils_Tuple2(
+										g,
+										_Utils_eq(g.starsCollected, $author$project$Config$starsAmount) ? _List_fromArray(
+											[$author$project$Effect$GameIsWon]) : _List_Nil);
+								}),
+							A2(
+								$author$project$Game$Update$moveOntoSand,
+								dir,
+								_Utils_update(
+									game,
+									{
+										starsCollected: game.starsCollected + 1,
+										tiles: A3($elm$core$Dict$insert, newPos, $author$project$Tile$Sand, game.tiles)
+									})));
+					case 'Gras':
+						var _v2 = _v0.a;
+						return A2($author$project$Game$Update$moveOntoGras, dir, game);
+					case 'Sand':
+						var _v3 = _v0.a;
+						return A2($author$project$Game$Update$moveOntoSand, dir, game);
+					case 'Path':
+						var _v4 = _v0.a;
+						var dir1 = _v4.a;
+						var dir2 = _v4.b;
+						return A2(
+							$author$project$Game$Update$moveOntoPath,
+							{
+								dir: dir,
+								path: _Utils_Tuple2(dir1, dir2)
+							},
+							game);
+					case 'Sign':
+						var string = _v0.a.a;
+						return $elm$random$Random$constant(
+							_Utils_Tuple2(
+								game,
+								_List_fromArray(
+									[
+										$author$project$Effect$ShowMessage(string)
+									])));
+					default:
+						break _v0$5;
+				}
+			} else {
+				break _v0$5;
+			}
+		}
+		return $elm$random$Random$constant(
+			$author$project$Effect$withNone(game));
+	});
 var $author$project$Main$setOverlay = F2(
 	function (maybeOverlay, model) {
 		return _Utils_update(
@@ -6826,48 +8262,92 @@ var $author$project$Main$newGame = function (model) {
 	return A2(
 		$author$project$Main$setOverlay,
 		$elm$core$Maybe$Nothing,
-		_Utils_update(
+		A2(
+			$author$project$Main$apply,
 			model,
-			{game: $author$project$Game$new}));
+			A2(
+				$elm$random$Random$map,
+				function (game) {
+					return _Utils_update(
+						model,
+						{game: game});
+				},
+				$author$project$Game$new)));
 };
-var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		var withNoCmd = function (a) {
 			return _Utils_Tuple2(a, $elm$core$Platform$Cmd$none);
 		};
-		switch (msg.$) {
-			case 'NewGame':
-				return withNoCmd(
-					$author$project$Main$newGame(model));
-			case 'GotSeed':
-				var seed = msg.a;
-				return withNoCmd(
-					A2($author$project$Main$gotSeed, seed, model));
-			case 'SoundRequested':
-				return _Utils_Tuple2(
+		var _v0 = model.overlay;
+		if (_v0.$ === 'Just') {
+			return withNoCmd(
+				_Utils_update(
 					model,
-					$author$project$InteropPorts$fromElm(
-						$author$project$InteropDefinitions$PlaySound(
-							{looping: false, sound: $author$project$Gen$Sound$ClickButton})));
-			case 'Received':
-				var result = msg.a;
-				if (result.$ === 'Err') {
-					var error = result.a;
-					var _v2 = A2($elm$core$Debug$log, 'received invalid json', error);
+					{overlay: $elm$core$Maybe$Nothing}));
+		} else {
+			switch (msg.$) {
+				case 'NewGame':
+					return withNoCmd(
+						$author$project$Main$newGame(model));
+				case 'GotSeed':
+					var seed = msg.a;
+					return withNoCmd(
+						A2($author$project$Main$gotSeed, seed, model));
+				case 'SoundRequested':
+					return _Utils_Tuple2(
+						model,
+						$author$project$Port$fromElm(
+							$author$project$PortDefinition$PlaySound(
+								{looping: false, sound: $author$project$Gen$Sound$ClickButton})));
+				case 'Received':
+					var result = msg.a;
+					if (result.$ === 'Ok') {
+						return withNoCmd(model);
+					} else {
+						var error = result.a;
+						var _v3 = A2($elm$core$Debug$log, 'received invalid json', error);
+						return withNoCmd(model);
+					}
+				case 'SetOverlay':
+					var maybeOverlay = msg.a;
+					return withNoCmd(
+						A2($author$project$Main$setOverlay, maybeOverlay, model));
+				case 'Move':
+					var dir = msg.a;
+					return withNoCmd(
+						A2(
+							$author$project$Main$apply,
+							model,
+							A2(
+								$elm$random$Random$map,
+								function (_v4) {
+									var game = _v4.a;
+									var effects = _v4.b;
+									return A3(
+										$elm$core$List$foldl,
+										$author$project$Main$applyEffect,
+										_Utils_update(
+											model,
+											{game: game}),
+										effects);
+								},
+								A2($author$project$Game$Update$move, dir, model.game))));
+				case 'OpenMap':
+					return withNoCmd(
+						_Utils_update(
+							model,
+							{
+								overlay: _Utils_eq(
+									model.overlay,
+									$elm$core$Maybe$Just($author$project$Overlay$Map)) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just($author$project$Overlay$Map)
+							}));
+				default:
 					return withNoCmd(model);
-				} else {
-					var sound = result.a.a;
-					return withNoCmd(model);
-				}
-			default:
-				var maybeOverlay = msg.a;
-				return withNoCmd(
-					A2($author$project$Main$setOverlay, maybeOverlay, model));
+			}
 		}
 	});
-var $author$project$Main$SoundRequested = {$: 'SoundRequested'};
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6897,69 +8377,524 @@ var $elm$core$List$singleton = function (value) {
 	return _List_fromArray(
 		[value]);
 };
+var $elm$virtual_dom$VirtualDom$node = function (tag) {
+	return _VirtualDom_node(
+		_VirtualDom_noScript(tag));
+};
+var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$virtual_dom$VirtualDom$attribute = F2(
-	function (key, value) {
-		return A2(
-			_VirtualDom_attribute,
-			_VirtualDom_noOnOrFormAction(key),
-			_VirtualDom_noJavaScriptOrHtmlUri(value));
-	});
-var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
+var $author$project$View$stylesheet = A3(
+	$elm$html$Html$node,
+	'style',
+	_List_Nil,
+	$elm$core$List$singleton(
+		$elm$html$Html$text('')));
+var $author$project$Config$title = 'Game Template';
+var $Orasund$elm_layout$Layout$column = function (attrs) {
+	return $elm$html$Html$div(
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column')
+				]),
+			attrs));
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
+var $Orasund$elm_layout$Html$Style$height = $elm$html$Html$Attributes$style('height');
+var $Orasund$elm_layout$Html$Style$left = $elm$html$Html$Attributes$style('left');
+var $elm$core$List$member = F2(
+	function (x, xs) {
 		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
 	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
+var $Orasund$elm_layout$Html$Style$position = $elm$html$Html$Attributes$style('position');
+var $Orasund$elm_layout$Html$Style$positionAbsolute = $Orasund$elm_layout$Html$Style$position('absolute');
+var $Orasund$elm_layout$Html$Style$positionRelative = $Orasund$elm_layout$Html$Style$position('relative');
+var $Orasund$elm_layout$Layout$text = F2(
+	function (attrs, content) {
+		return A2(
+			$Orasund$elm_layout$Layout$el,
+			attrs,
+			$elm$html$Html$text(content));
+	});
+var $author$project$Config$tileSize = 8 * 4;
+var $Orasund$elm_layout$Html$Style$top = $elm$html$Html$Attributes$style('top');
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $author$project$Sprite$Big$bonsai = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜🟩🟩⬜⬜⬜', '⬜⬜🟩🟩🟩🟩⬜⬜', '⬜⬜⬜⬛⬛⬜🟩⬜', '⬜🟩🟩⬜⬛🟩🟩🟩', '⬜⬜⬛⬛⬛⬛⬜⬜', '⬜⬜⬛⬛⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$bonsaiSapling = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬛⬜⬜⬜⬜', '⬜⬜⬜⬜⬛⬜⬜⬜', '⬜⬜⬜⬜⬛⬛⬜⬜', '⬜⬜⬜⬜⬛⬛⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$gras = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜🟩⬜⬜⬜⬜⬜', '⬜⬜⬜🟩⬜⬜🟩⬜', '⬜🟩⬜🟩⬜🟩⬜⬜', '⬜🟩⬜🟩⬜🟩⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$pole = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬛⬜⬜⬛⬜⬜', '⬜⬜⬛⬛⬛⬛⬜⬜', '⬜⬜⬛⬜⬜⬛⬜⬜', '⬜⬜⬛⬜⬜⬛⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$sand = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜🟨⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜🟨⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜🟨⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜🟨⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$shrine = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜', '⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛', '⬜⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬜', '⬜⬜⬜⬛⬛⬜⬜⬛⬛⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$sign = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬛⬛⬛⬛⬛⬛⬜', '⬜⬛⬜⬜⬜⬜⬛⬜', '⬜⬛⬜⬜⬜⬜⬛⬜', '⬜⬛⬛⬛⬛⬛⬛⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$star = _List_fromArray(
+	['⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬛🟨🟨⬛⬜⬜', '⬛⬛⬛🟨🟨⬛⬛⬛', '⬛🟨🟨🟨🟨🟨🟨⬛', '⬜⬛🟨🟨🟨🟨⬛⬜', '⬛🟨🟨🟨🟨🟨🟨⬛', '⬛🟨🟨⬛⬛🟨🟨⬛', '⬛⬛⬛⬜⬜⬛⬛⬛']);
+var $author$project$Sprite$Big$statue = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬛⬛⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬛⬛⬛⬛⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬛⬛⬛⬛⬛⬛⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬛⬛⬜⬜⬛⬛⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬛⬜⬜⬛⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬛⬜⬛⬛⬜⬛⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜', '⬜⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜⬜', '⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜', '⬜⬜⬜⬛⬜⬜⬛⬛⬛⬛⬜⬜⬛⬜⬜⬜', '⬜⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜⬜', '⬜⬜⬛⬜⬛⬛⬛⬛⬛⬛⬛⬛⬜⬛⬜⬜', '⬜⬜⬛⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬛⬜⬜', '⬜⬜⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬛⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$stone = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬛⬛⬛⬛⬜⬜', '⬜⬜⬛⬛⬛⬛⬛⬜', '⬜⬛⬛⬛⬛⬛⬛⬜', '⬜⬛⬛⬛⬛⬛⬛⬜', '⬜⬜⬛⬛⬛⬛⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$viewEmpty = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
 };
-var $Orasund$elm_layout$Layout$asButton = function (args) {
-	return _Utils_ap(
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'cursor', 'pointer'),
-				A2($elm$html$Html$Attributes$attribute, 'aria-label', args.label),
-				A2($elm$html$Html$Attributes$attribute, 'role', 'button')
-			]),
-		A2(
-			$elm$core$Maybe$withDefault,
-			_List_Nil,
+var $author$project$Image$bitmap = F3(
+	function (attrs, args, list) {
+		var zero = $elm$core$List$head(
 			A2(
-				$elm$core$Maybe$map,
-				function (msg) {
-					return _List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(msg)
-						]);
+				$elm$core$List$filterMap,
+				function (_v2) {
+					var pos = _v2.a;
+					var color = _v2.b;
+					return _Utils_eq(
+						pos,
+						_Utils_Tuple2(0, 0)) ? $elm$core$Maybe$Just(color) : $elm$core$Maybe$Nothing;
 				},
-				args.onPress)));
-};
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $Orasund$elm_layout$Layout$textButton = F2(
-	function (attrs, args) {
+				list));
+		var width = $elm$core$String$fromFloat(args.columns * args.pixelSize) + 'px';
+		var height = $elm$core$String$fromFloat(args.rows * args.pixelSize) + 'px';
 		return A2(
-			$elm$html$Html$button,
+			$elm$html$Html$div,
 			_Utils_ap(
-				$Orasund$elm_layout$Layout$asButton(args),
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'width', width),
+						A2($elm$html$Html$Attributes$style, 'height', height)
+					]),
 				attrs),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(args.label)
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$Attributes$style,
+							'box-shadow',
+							A2(
+								$elm$core$String$join,
+								',',
+								A2(
+									$elm$core$List$map,
+									function (_v0) {
+										var _v1 = _v0.a;
+										var x = _v1.a;
+										var y = _v1.b;
+										var color = _v0.b;
+										return A2(
+											$elm$core$String$join,
+											' ',
+											_List_fromArray(
+												[
+													$elm$core$String$fromFloat(x * args.pixelSize) + 'px',
+													$elm$core$String$fromFloat(y * args.pixelSize) + 'px',
+													color
+												]));
+									},
+									list))),
+							A2(
+							$elm$html$Html$Attributes$style,
+							'width',
+							$elm$core$String$fromFloat(args.pixelSize) + 'px'),
+							A2(
+							$elm$html$Html$Attributes$style,
+							'height',
+							$elm$core$String$fromFloat(args.pixelSize) + 'px'),
+							A2(
+							$elm$html$Html$Attributes$style,
+							'background',
+							A2($elm$core$Maybe$withDefault, 'transparent', zero))
+						]),
+					_List_Nil)
 				]));
 	});
-var $author$project$Config$title = 'Game Template';
-var $author$project$Main$NewGame = {$: 'NewGame'};
+var $author$project$View$Sprite$matrixToDict = function (rows) {
+	return $elm$core$List$concat(
+		A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (y, string) {
+					return A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (x, a) {
+								return _Utils_Tuple2(
+									_Utils_Tuple2(x, y),
+									function () {
+										switch (a.valueOf()) {
+											case '⬜':
+												return 'white';
+											case '🟨':
+												return '#c5e710';
+											case '🟩':
+												return '#57ba57';
+											case '🟦':
+												return 'blue';
+											case '⬛':
+												return 'black';
+											default:
+												return 'white';
+										}
+									}());
+							}),
+						$elm$core$String$toList(string));
+				}),
+			rows));
+};
+var $author$project$View$Sprite$fromMatrix = F3(
+	function (attrs, args, rows) {
+		return A3(
+			$author$project$Image$bitmap,
+			attrs,
+			args,
+			$author$project$View$Sprite$matrixToDict(rows));
+	});
+var $author$project$View$Sprite$viewLargeSprite = function (attrs) {
+	return A2(
+		$author$project$View$Sprite$fromMatrix,
+		attrs,
+		{columns: 16, pixelSize: 4, rows: 16});
+};
+var $author$project$Sprite$Big$curvedPath = _List_fromArray(
+	['⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜🟨🟨⬜⬜⬜⬜', '🟨🟨🟨🟨⬜⬜⬜⬜', '🟨🟨⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$straightPath = _List_fromArray(
+	['⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜', '⬜⬜⬜🟨🟨⬜⬜⬜']);
+var $author$project$View$Sprite$viewSprite = function (attrs) {
+	return A2(
+		$author$project$View$Sprite$fromMatrix,
+		attrs,
+		{columns: 8, pixelSize: 4, rows: 8});
+};
+var $author$project$View$Sprite$viewPath = F3(
+	function (attrs, dir1, dir2) {
+		var _v0 = _Utils_Tuple2(dir1, dir2);
+		switch (_v0.a.$) {
+			case 'Up':
+				switch (_v0.b.$) {
+					case 'Down':
+						var _v1 = _v0.a;
+						var _v2 = _v0.b;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$straightPath);
+					case 'Up':
+						var _v3 = _v0.a;
+						var _v4 = _v0.b;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$straightPath);
+					case 'Left':
+						var _v19 = _v0.a;
+						var _v20 = _v0.b;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$curvedPath);
+					default:
+						var _v21 = _v0.a;
+						var _v22 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+								attrs),
+							$author$project$Sprite$Big$curvedPath);
+				}
+			case 'Right':
+				switch (_v0.b.$) {
+					case 'Right':
+						var _v11 = _v0.a;
+						var _v12 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+								attrs),
+							$author$project$Sprite$Big$straightPath);
+					case 'Left':
+						var _v15 = _v0.a;
+						var _v16 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+								attrs),
+							$author$project$Sprite$Big$straightPath);
+					case 'Up':
+						var _v23 = _v0.a;
+						var _v24 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+								attrs),
+							$author$project$Sprite$Big$curvedPath);
+					default:
+						var _v25 = _v0.a;
+						var _v26 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(180deg)'),
+								attrs),
+							$author$project$Sprite$Big$curvedPath);
+				}
+			case 'Down':
+				switch (_v0.b.$) {
+					case 'Down':
+						var _v5 = _v0.a;
+						var _v6 = _v0.b;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$straightPath);
+					case 'Up':
+						var _v7 = _v0.a;
+						var _v8 = _v0.b;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$straightPath);
+					case 'Right':
+						var _v27 = _v0.a;
+						var _v28 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(180deg)'),
+								attrs),
+							$author$project$Sprite$Big$curvedPath);
+					default:
+						var _v29 = _v0.a;
+						var _v30 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(-90deg)'),
+								attrs),
+							$author$project$Sprite$Big$curvedPath);
+				}
+			default:
+				switch (_v0.b.$) {
+					case 'Left':
+						var _v9 = _v0.a;
+						var _v10 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+								attrs),
+							$author$project$Sprite$Big$straightPath);
+					case 'Right':
+						var _v13 = _v0.a;
+						var _v14 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(90deg)'),
+								attrs),
+							$author$project$Sprite$Big$straightPath);
+					case 'Up':
+						var _v17 = _v0.a;
+						var _v18 = _v0.b;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$curvedPath);
+					default:
+						var _v31 = _v0.a;
+						var _v32 = _v0.b;
+						return A2(
+							$author$project$View$Sprite$viewSprite,
+							A2(
+								$elm$core$List$cons,
+								A2($elm$html$Html$Attributes$style, 'transform', 'rotate(-90deg)'),
+								attrs),
+							$author$project$Sprite$Big$curvedPath);
+				}
+		}
+	});
+var $author$project$Sprite$Big$viewPlayer = _List_fromArray(
+	['⬜⬜⬜⬜⬜⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬛⬛⬛⬛⬛⬛⬜', '⬜⬜⬜⬛⬛⬜⬜⬜', '⬜⬜⬛⬛⬛⬛⬜⬜', '⬜⬜⬛⬜⬜⬛⬜⬜', '⬜⬜⬜⬜⬜⬜⬜⬜']);
+var $author$project$Sprite$Big$viewWater = _List_fromArray(
+	['🟦🟦🟦🟦🟦🟦🟦🟦', '🟦🟦🟦🟦🟦🟦🟦🟦', '🟦🟦🟦🟦🟦🟦🟦🟦', '🟦🟦🟦🟦🟦🟦🟦🟦', '🟦🟦🟦🟦🟦🟦🟦🟦', '🟦🟦🟦🟦🟦🟦🟦🟦', '🟦🟦🟦🟦🟦🟦🟦🟦', '🟦🟦🟦🟦🟦🟦🟦🟦']);
+var $author$project$View$Game$viewBigTile = F3(
+	function (attrs, _v0, game) {
+		var x = _v0.a;
+		var y = _v0.b;
+		if (_Utils_eq(
+			game.playerPos,
+			_Utils_Tuple2(x, y))) {
+			return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$viewPlayer);
+		} else {
+			var _v1 = A2(
+				$elm$core$Dict$get,
+				_Utils_Tuple2(x, y),
+				game.tiles);
+			if (_v1.$ === 'Just') {
+				switch (_v1.a.$) {
+					case 'ObstacleTile':
+						var obstacle = _v1.a.a;
+						if (obstacle.$ === 'Stone') {
+							return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$stone);
+						} else {
+							return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$pole);
+						}
+					case 'Statue':
+						var _v3 = _v1.a;
+						return A2($author$project$View$Sprite$viewLargeSprite, attrs, $author$project$Sprite$Big$statue);
+					case 'Shrine':
+						var _v4 = _v1.a;
+						return A2($author$project$View$Sprite$viewLargeSprite, attrs, $author$project$Sprite$Big$shrine);
+					case 'Bonsai':
+						var _v5 = _v1.a;
+						return A2(
+							$elm$core$List$all,
+							$elm$core$Basics$neq($author$project$Tile$Sand),
+							A2(
+								$author$project$Game$neighborsOf,
+								_Utils_Tuple2(x, y),
+								game)) ? A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$bonsai) : A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$bonsaiSapling);
+					case 'Path':
+						var _v6 = _v1.a;
+						var dir1 = _v6.a;
+						var dir2 = _v6.b;
+						return A3($author$project$View$Sprite$viewPath, attrs, dir1, dir2);
+					case 'Sand':
+						var _v7 = _v1.a;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$sand);
+					case 'Gras':
+						var _v8 = _v1.a;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$gras);
+					case 'Water':
+						var _v9 = _v1.a;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$viewWater);
+					case 'Sign':
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$sign);
+					case 'Star':
+						var _v10 = _v1.a;
+						return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$star);
+					default:
+						var _v11 = _v1.a;
+						return A2($author$project$View$Sprite$viewSprite, attrs, _List_Nil);
+				}
+			} else {
+				return A2($author$project$View$Sprite$viewSprite, attrs, $author$project$Sprite$Big$viewEmpty);
+			}
+		}
+	});
+var $author$project$View$Game$toHtml = function (game) {
+	var plantsMet = A2(
+		$elm$core$List$filterMap,
+		function (_v1) {
+			var pos = _v1.a;
+			var tile = _v1.b;
+			return _Utils_eq(tile, $author$project$Tile$Bonsai) ? function (neighbors) {
+				return A2(
+					$elm$core$List$any,
+					function (t) {
+						if (t.$ === 'Path') {
+							return true;
+						} else {
+							return false;
+						}
+					},
+					neighbors) ? $elm$core$Maybe$Just(neighbors) : $elm$core$Maybe$Nothing;
+			}(
+				A2($author$project$Game$neighborsOf, pos, game)) : $elm$core$Maybe$Nothing;
+		},
+		$elm$core$Dict$toList(game.tiles));
+	var _v0 = game.playerPos;
+	var playerX = _v0.a;
+	var playerY = _v0.b;
+	return A2(
+		$Orasund$elm_layout$Layout$column,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$Orasund$elm_layout$Html$Style$positionRelative,
+						$Orasund$elm_layout$Html$Style$height(
+						$elm$core$String$fromInt((1 + ($author$project$Config$cameraRadius * 2)) * $author$project$Config$tileSize) + 'px')
+					]),
+				A2(
+					$elm$core$List$concatMap,
+					function (y) {
+						return A2(
+							$elm$core$List$map,
+							function (x) {
+								return A3(
+									$author$project$View$Game$viewBigTile,
+									_List_fromArray(
+										[
+											$Orasund$elm_layout$Html$Style$positionAbsolute,
+											$Orasund$elm_layout$Html$Style$left(
+											$elm$core$String$fromInt(((x + $author$project$Config$cameraRadius) - playerX) * $author$project$Config$tileSize) + 'px'),
+											$Orasund$elm_layout$Html$Style$top(
+											$elm$core$String$fromInt(((y + $author$project$Config$cameraRadius) - playerY) * $author$project$Config$tileSize) + 'px')
+										]),
+									_Utils_Tuple2(x, y),
+									game);
+							},
+							A2($elm$core$List$range, playerX - $author$project$Config$cameraRadius, playerX + $author$project$Config$cameraRadius));
+					},
+					A2($elm$core$List$range, playerY - $author$project$Config$cameraRadius, playerY + $author$project$Config$cameraRadius))),
+				A2(
+				$Orasund$elm_layout$Layout$text,
+				_List_Nil,
+				'Stars:' + ($elm$core$String$fromInt(game.starsCollected) + ('/' + $elm$core$String$fromInt($author$project$Config$starsAmount)))),
+				function (n) {
+				return A2(
+					$Orasund$elm_layout$Layout$column,
+					_List_Nil,
+					_List_fromArray(
+						[
+							A2(
+							$Orasund$elm_layout$Layout$text,
+							_List_Nil,
+							'Sad Plants:' + $elm$core$String$fromInt(n)),
+							A2(
+							$Orasund$elm_layout$Layout$text,
+							_List_Nil,
+							'Happy Plants:' + $elm$core$String$fromInt(
+								$elm$core$List$length(plantsMet) - n))
+						]));
+			}(
+				$elm$core$List$length(
+					A2(
+						$elm$core$List$filter,
+						function (neighbors) {
+							return A2($elm$core$List$member, $author$project$Tile$Sand, neighbors);
+						},
+						plantsMet)))
+			]));
+};
 var $author$project$View$Overlay$asFullScreenOverlay = function (attrs) {
 	return $Orasund$elm_layout$Layout$el(
 		_Utils_ap(
@@ -6976,31 +8911,260 @@ var $Orasund$elm_layout$Layout$alignAtCenter = A2($elm$html$Html$Attributes$styl
 var $Orasund$elm_layout$Layout$contentCentered = A2($elm$html$Html$Attributes$style, 'justify-content', 'center');
 var $Orasund$elm_layout$Layout$centered = _List_fromArray(
 	[$Orasund$elm_layout$Layout$contentCentered, $Orasund$elm_layout$Layout$alignAtCenter]);
-var $Orasund$elm_layout$Layout$column = function (attrs) {
+var $author$project$View$Overlay$gameWon = A2(
+	$author$project$View$Overlay$asFullScreenOverlay,
+	_Utils_ap(
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'background-color', 'white'),
+				A2($elm$html$Html$Attributes$style, 'color', 'black'),
+				A2($elm$html$Html$Attributes$style, 'font-size', '24px')
+			]),
+		$Orasund$elm_layout$Layout$centered),
+	A2(
+		$Orasund$elm_layout$Layout$column,
+		A2(
+			$elm$core$List$cons,
+			A2($elm$html$Html$Attributes$style, 'gap', 'var(--big-space)'),
+			$Orasund$elm_layout$Layout$centered),
+		_List_fromArray(
+			[
+				A2(
+				$Orasund$elm_layout$Layout$text,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'font-size', '16px')
+					]),
+				'You found all Stars'),
+				A2(
+				$Orasund$elm_layout$Layout$text,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'font-size', '24px')
+					]),
+				'Thanks for playing')
+			])));
+var $Orasund$elm_layout$Layout$row = function (attrs) {
 	return $elm$html$Html$div(
 		_Utils_ap(
 			_List_fromArray(
 				[
 					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
-					A2($elm$html$Html$Attributes$style, 'flex-direction', 'column')
+					A2($elm$html$Html$Attributes$style, 'flex-direction', 'row'),
+					A2($elm$html$Html$Attributes$style, 'flex-wrap', 'wrap')
 				]),
 			attrs));
 };
-var $Orasund$elm_layout$Layout$text = F2(
-	function (attrs, content) {
-		return A2(
-			$Orasund$elm_layout$Layout$el,
-			attrs,
-			$elm$html$Html$text(content));
+var $author$project$Sprite$Small$path = F2(
+	function (dir1, dir2) {
+		var _v0 = _Utils_Tuple2(dir1, dir2);
+		switch (_v0.a.$) {
+			case 'Up':
+				switch (_v0.b.$) {
+					case 'Down':
+						var _v1 = _v0.a;
+						var _v2 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜🟨']);
+					case 'Up':
+						var _v5 = _v0.a;
+						var _v6 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜🟨']);
+					case 'Left':
+						var _v17 = _v0.a;
+						var _v18 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜⬜']);
+					default:
+						var _v21 = _v0.a;
+						var _v22 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜⬜']);
+				}
+			case 'Left':
+				switch (_v0.b.$) {
+					case 'Right':
+						var _v9 = _v0.a;
+						var _v10 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜⬜']);
+					case 'Left':
+						var _v13 = _v0.a;
+						var _v14 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜⬜']);
+					case 'Up':
+						var _v19 = _v0.a;
+						var _v20 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜⬜']);
+					default:
+						var _v27 = _v0.a;
+						var _v28 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜🟨']);
+				}
+			case 'Down':
+				switch (_v0.b.$) {
+					case 'Up':
+						var _v3 = _v0.a;
+						var _v4 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜🟨']);
+					case 'Down':
+						var _v7 = _v0.a;
+						var _v8 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜🟨']);
+					case 'Left':
+						var _v25 = _v0.a;
+						var _v26 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜🟨']);
+					default:
+						var _v29 = _v0.a;
+						var _v30 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜🟨']);
+				}
+			default:
+				switch (_v0.b.$) {
+					case 'Left':
+						var _v11 = _v0.a;
+						var _v12 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜⬜']);
+					case 'Right':
+						var _v15 = _v0.a;
+						var _v16 = _v0.b;
+						return _List_fromArray(
+							['🟨🟨', '⬜⬜']);
+					case 'Up':
+						var _v23 = _v0.a;
+						var _v24 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜⬜']);
+					default:
+						var _v31 = _v0.a;
+						var _v32 = _v0.b;
+						return _List_fromArray(
+							['⬜🟨', '⬜🟨']);
+				}
+		}
 	});
-var $author$project$View$Overlay$gameMenu = function (args) {
+var $author$project$View$Sprite$viewSmallSprite = function (attrs) {
+	return A2(
+		$author$project$View$Sprite$fromMatrix,
+		attrs,
+		{columns: 2, pixelSize: 4, rows: 2});
+};
+var $author$project$View$Game$viewSmallTile = F2(
+	function (_v0, game) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return A2(
+			$author$project$View$Sprite$viewSmallSprite,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$withDefault,
+				_List_Nil,
+				A2(
+					$elm$core$Maybe$map,
+					function (tile) {
+						switch (tile.$) {
+							case 'ObstacleTile':
+								return _List_fromArray(
+									['⬛⬛', '⬛⬛']);
+							case 'Sign':
+								return _List_fromArray(
+									['⬛⬛', '⬛⬛']);
+							case 'Bonsai':
+								return A2(
+									$elm$core$List$all,
+									$elm$core$Basics$neq($author$project$Tile$Sand),
+									A2(
+										$author$project$Game$neighborsOf,
+										_Utils_Tuple2(x, y),
+										game)) ? _List_fromArray(
+									['⬜🟩', '⬜⬜']) : _List_fromArray(
+									['⬜⬛', '⬜⬜']);
+							case 'Path':
+								var dir1 = tile.a;
+								var dir2 = tile.b;
+								return A2($author$project$Sprite$Small$path, dir1, dir2);
+							case 'Sand':
+								return _List_fromArray(
+									['⬜⬜', '⬜⬜']);
+							case 'Gras':
+								return _List_fromArray(
+									['🟩🟩', '🟩🟩']);
+							case 'Water':
+								return _List_fromArray(
+									['🟦🟦', '🟦🟦']);
+							case 'Statue':
+								return _List_fromArray(
+									['⬛⬛', '⬛⬛']);
+							case 'Shrine':
+								return _List_fromArray(
+									['⬛⬛', '⬛⬛']);
+							case 'Star':
+								return _List_fromArray(
+									['🟨🟨', '🟨🟨']);
+							default:
+								return _List_fromArray(
+									['⬛⬛', '⬛⬛']);
+						}
+					},
+					A2(
+						$elm$core$Dict$get,
+						_Utils_Tuple2(x, y),
+						game.tiles))));
+	});
+var $author$project$View$Overlay$map = function (game) {
+	var size = ($author$project$Config$cameraRadius + 1) * 4;
+	var _v0 = game.playerPos;
+	var playerX = _v0.a;
+	var playerY = _v0.b;
 	return A2(
 		$author$project$View$Overlay$asFullScreenOverlay,
 		_Utils_ap(
 			_List_fromArray(
 				[
-					A2($elm$html$Html$Attributes$style, 'background-color', 'var(--secondary-color)'),
+					A2($elm$html$Html$Attributes$style, 'background-color', 'white'),
 					A2($elm$html$Html$Attributes$style, 'color', 'white')
+				]),
+			$Orasund$elm_layout$Layout$centered),
+		A2(
+			$Orasund$elm_layout$Layout$column,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (y) {
+					return A2(
+						$Orasund$elm_layout$Layout$row,
+						_List_Nil,
+						A2(
+							$elm$core$List$map,
+							function (x) {
+								return A2(
+									$author$project$View$Game$viewSmallTile,
+									_Utils_Tuple2(x, y),
+									game);
+							},
+							A2($elm$core$List$range, playerX - size, playerX + size)));
+				},
+				A2($elm$core$List$range, playerY - size, playerY + size))));
+};
+var $author$project$View$Overlay$message = function (string) {
+	return A2(
+		$author$project$View$Overlay$asFullScreenOverlay,
+		_Utils_ap(
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'background-color', 'white'),
+					A2($elm$html$Html$Attributes$style, 'color', 'black'),
+					A2($elm$html$Html$Attributes$style, 'font-size', '24px')
 				]),
 			$Orasund$elm_layout$Layout$centered),
 		A2(
@@ -7012,70 +9176,60 @@ var $author$project$View$Overlay$gameMenu = function (args) {
 			_List_fromArray(
 				[
 					A2(
-					$Orasund$elm_layout$Layout$column,
-					$Orasund$elm_layout$Layout$centered,
+					$Orasund$elm_layout$Layout$text,
 					_List_fromArray(
 						[
-							A2(
-							$Orasund$elm_layout$Layout$text,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('font-size-title')
-								]),
-							'🎲'),
-							A2(
-							$Orasund$elm_layout$Layout$text,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('font-size-big')
-								]),
-							'Game-Template')
-						])),
-					A2(
-					$Orasund$elm_layout$Layout$textButton,
-					_List_Nil,
-					{
-						label: 'Start',
-						onPress: $elm$core$Maybe$Just(args.startGame)
-					})
+							A2($elm$html$Html$Attributes$style, 'padding', '16px')
+						]),
+					string)
 				])));
 };
 var $author$project$Main$viewOverlay = F2(
-	function (_v0, overlay) {
-		return $author$project$View$Overlay$gameMenu(
-			{startGame: $author$project$Main$NewGame});
+	function (model, overlay) {
+		switch (overlay.$) {
+			case 'GameWon':
+				return $author$project$View$Overlay$gameWon;
+			case 'Map':
+				return $author$project$View$Overlay$map(model.game);
+			default:
+				var string = overlay.a;
+				return $author$project$View$Overlay$message(string);
+		}
 	});
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $elm$html$Html$Attributes$name = $elm$html$Html$Attributes$stringProperty('name');
-var $elm$virtual_dom$VirtualDom$node = function (tag) {
-	return _VirtualDom_node(
-		_VirtualDom_noScript(tag));
-};
-var $elm$html$Html$node = $elm$virtual_dom$VirtualDom$node;
-var $author$project$View$viewportMeta = function () {
-	var width = $elm$core$String$fromFloat($author$project$Config$screenMinWidth);
-	return A3(
-		$elm$html$Html$node,
-		'meta',
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$name('viewport'),
-				A2($elm$html$Html$Attributes$attribute, 'content', 'user-scalable=no,width=' + width)
-			]),
-		_List_Nil);
-}();
+var $author$project$Html$Viewport$fixedWidth = F2(
+	function (attrs, width) {
+		return A3(
+			$elm$html$Html$node,
+			'meta',
+			_Utils_ap(
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$name('viewport'),
+						A2(
+						$elm$html$Html$Attributes$attribute,
+						'content',
+						'user-scalable=no,width=' + $elm$core$String$fromFloat(width))
+					]),
+				attrs),
+			_List_Nil);
+	});
+var $author$project$View$viewportMeta = A2($author$project$Html$Viewport$fixedWidth, _List_Nil, $author$project$Config$screenMinWidth);
 var $author$project$Main$view = function (model) {
-	var content = $elm$html$Html$text('');
+	var content = $author$project$View$Game$toHtml(model.game);
 	return {
 		body: _List_fromArray(
 			[
 				$author$project$View$viewportMeta,
-				A2(
-				$Orasund$elm_layout$Layout$textButton,
-				_List_Nil,
-				{
-					label: 'Play Sound',
-					onPress: $elm$core$Maybe$Just($author$project$Main$SoundRequested)
-				}),
+				$author$project$View$stylesheet,
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(

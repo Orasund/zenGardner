@@ -67,7 +67,7 @@ new =
             |> Dict.insert ( -4, -9 )
                 (Sign "Press M to open the map")
             |> Dict.insert ( -6, -12 )
-                (Sign "Make plants happy, by incircling them")
+                (Sign "Make plants happy, by encircling them")
             |> Dict.insert ( -7, -14 )
                 ("Collect all "
                     ++ String.fromInt Config.starsAmount

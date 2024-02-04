@@ -17,7 +17,7 @@ screenMinWidth =
 
 screenMinHeight : number
 screenMinHeight =
-    700
+    400
 
 
 cameraRadius : Int

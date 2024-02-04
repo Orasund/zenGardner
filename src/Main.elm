@@ -13,8 +13,6 @@ import Html.Attributes
 import Json.Decode
 import Layout
 import Overlay exposing (Overlay(..))
-import Port
-import PortDefinition exposing (FromElm(..), ToElm(..))
 import Random exposing (Generator, Seed)
 import View
 import View.Game
@@ -31,8 +29,6 @@ type alias Model =
 type Msg
     = NewGame
     | SetOverlay (Maybe Overlay)
-    | SoundRequested
-    | Received (Result Json.Decode.Error ToElm)
     | GotSeed Seed
     | Move Direction
     | Idle
@@ -58,10 +54,7 @@ init () =
       , seed = seed
       , overlay = Nothing
       }
-    , [ Gen.Sound.asList |> RegisterSounds |> Port.fromElm
-      , Random.generate GotSeed Random.independentSeed
-      ]
-        |> Cmd.batch
+    , Random.generate GotSeed Random.independentSeed
     )
 
 
@@ -110,24 +103,6 @@ update msg model =
 
                 GotSeed seed ->
                     model |> gotSeed seed |> withNoCmd
-
-                SoundRequested ->
-                    ( model
-                    , PlaySound { sound = ClickButton, looping = False }
-                        |> Port.fromElm
-                    )
-
-                Received result ->
-                    case result of
-                        Ok (SoundEnded _) ->
-                            model |> withNoCmd
-
-                        Err error ->
-                            let
-                                _ =
-                                    Debug.log "received invalid json" error
-                            in
-                            model |> withNoCmd
 
                 SetOverlay maybeOverlay ->
                     model |> setOverlay maybeOverlay |> withNoCmd
@@ -229,10 +204,7 @@ toDirection string =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    [ Port.toElm |> Sub.map Received
-    , Browser.Events.onKeyDown keyDecoder
-    ]
-        |> Sub.batch
+    Browser.Events.onKeyDown keyDecoder
 
 
 main : Program () Model Msg
